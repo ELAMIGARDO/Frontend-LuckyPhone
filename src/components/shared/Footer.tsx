@@ -4,63 +4,69 @@ import { socialLinks } from "../../constants/links";
 
 export const Footer = () => {
   return (
-    <footer
-      className="py-16 bg-gray-950 px-12 flex justify-between gap-10 text-slate-200 text-sm flex-wrap mt-10 md:flex-nowrap"
-    >
-      <Link
-        to="/"
-        className="text-2xl font-bold tracking-tighter transition-all text-white flex-1"
-      >
-        LuckyPhone
-      </Link>
-
-      <div className="flex flex-col gap-4 flex-1">
-        <p className="font-semibold uppercase tracking-tighter">
-          suscribete
+    <footer className="py-16 bg-black px-6 flex justify-between gap-10 text-slate-300 text-sm flex-wrap mt-10 md:flex-nowrap border-t border-slate-900 lg:px-12">
+      
+      {/* LOGO CON EFECTO DE COLOR */}
+      <div className="flex-1 min-w-[200px]">
+        <Link
+          to="/"
+          className="text-2xl font-extrabold tracking-tighter transition-all text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 hover:brightness-110 duration-300"
+        >
+          LuckyPhone
+        </Link>
+        <p className="text-xs text-slate-500 mt-2 font-medium">
+          © {new Date().getFullYear()} LuckyPhone. Todos los derechos reservados.
         </p>
-        {/* 🛠️ CORREGIDO: Se eliminó la palabra "p" suelta de className */}
-        <div className="text-xs font-medium">
-          Suscríbete para recibir las últimas promociones y ofertas.
+      </div>
+
+      {/* SUSCRIPCIÓN OPTIMIZADA */}
+      <div className="flex flex-col gap-4 flex-1 min-w-[240px]">
+        <p className="font-semibold uppercase tracking-wider text-xs text-white">
+          Suscríbete
+        </p>
+        <div className="text-xs font-medium text-slate-400">
+          Suscríbete para recibir las últimas promociones y ofertas en iPhones.
         </div>
-        {/* 🛠️ CORREGIDO: "border-gray-800" (tenías boder) e "items-center" (tenías item) */}
-        <div className="border border- flex items-center gap-2 px-3 py-2 rounded-full">
+        {/* CORREGIDO: Borde arreglado y focus con color de la marca */}
+        <div className="border border-slate-800 focus-within:border-purple-500 bg-gray-950 flex items-center gap-2 px-3 py-2 rounded-full transition-colors duration-300">
           <input 
             type="email" 
             placeholder="Ingresa tu correo electrónico" 
-            className="pl-2 bg-gray-950 text-slate-200 w-full focus:outline-none"
+            className="pl-2 bg-transparent text-slate-200 w-full focus:outline-none text-xs"
           />
-          <button className="text-slate-200">
-            <BiChevronRight size={20}/>
+          <button className="text-white bg-purple-600 hover:bg-purple-700 p-1.5 rounded-full transition-colors duration-200 active:scale-95">
+            <BiChevronRight size={16}/>
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 flex-1">
-        <p className="font-semibold uppercase tracking-tighter">
-          Politicas
+      {/* POLÍTICAS Y ENLACES */}
+      <div className="flex flex-col gap-4 flex-1 min-w-[140px]">
+        <p className="font-semibold uppercase tracking-wider text-xs text-white">
+          Políticas
         </p>
-        {/* 🛠️ CORREGIDO: Separado en "flex-col gap-2" (tenías flex-col-gap-2) */}
         <nav className="flex flex-col gap-2 text-xs font-medium">
-          <Link to="/celulares">Productos</Link>
-          {/* 🛠️ SOLUCIÓN AL CSS CONFLICT: Se quitó "text-white" para dejar solo un color */}
-          <Link to="#" className="text-slate-300">Politica de Privacidad</Link>
-          <Link to="#" className="text-slate-300">Terminos de uso</Link>
+          <Link to="/celulares" className="text-slate-400 hover:text-purple-400 transition-colors duration-200">Productos</Link>
+          <Link to="#" className="text-slate-400 hover:text-purple-400 transition-colors duration-200">Política de Privacidad</Link>
+          <Link to="#" className="text-slate-400 hover:text-purple-400 transition-colors duration-200">Términos de uso</Link>
         </nav>
       </div>
 
-      <div className="flex flex-col gap-4 flex-1">
-        <p className="font-semibold uppercase tracking-tighter">Siguenos</p>
-        <p className="text-xs leading-6">No te pierdas lo que tiene LuckyPhone para ti</p>
+      {/* REDES SOCIALES COMPLETA Y REPARADA */}
+      <div className="flex flex-col gap-4 flex-1 min-w-[200px]">
+        <p className="font-semibold uppercase tracking-wider text-xs text-white">Síguenos</p>
+        <p className="text-xs leading-relaxed text-slate-400">No te pierdas lo que tiene LuckyPhone para ti</p>
 
-        <div className="flex">
+        {/* CORREGIDO: Redes sociales en grilla limpia con bordes fijos */}
+        <div className="flex gap-2">
             { 
                 socialLinks.map((link) => (
                     <a key={link.id}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-slate-300 boder border-gray-800 w-full h-full py-3.5 flex items-center justify-center 
-                    transition-all hover:bg-white hover:text-gray-950"
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-slate-400 border border-slate-800 w-10 h-10 rounded-full flex items-center justify-center 
+                      transition-all duration-300 hover:bg-purple-600 hover:text-white hover:border-purple-500 hover:shadow-[0_0_15px_rgba(124,58,237,0.4)] active:scale-95 text-lg"
                     >
                         {link.icon}
                     </a>
