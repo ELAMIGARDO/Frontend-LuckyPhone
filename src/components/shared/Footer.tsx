@@ -7,10 +7,10 @@ export const Footer = () => {
     <footer className="py-16 bg-black px-6 flex justify-between gap-10 text-slate-300 text-sm flex-wrap mt-10 md:flex-nowrap border-t border-slate-900 lg:px-12">
       
       {/* LOGO CON EFECTO DE COLOR */}
-      <div className="flex-1 min-w-[200px]">
+      <div className="flex-1 min-w-50">
         <Link
           to="/"
-          className="text-2xl font-extrabold tracking-tighter transition-all text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 hover:brightness-110 duration-300"
+          className="text-2xl font-extrabold tracking-tighter transition-all text-transparent bg-clip-text bg-linear-to-r from-purple-500 to-blue-500 hover:brightness-110 duration-300"
         >
           LuckyPhone
         </Link>
@@ -20,7 +20,7 @@ export const Footer = () => {
       </div>
 
       {/* SUSCRIPCIÓN OPTIMIZADA */}
-      <div className="flex flex-col gap-4 flex-1 min-w-[240px]">
+      <div className="flex flex-col gap-4 flex-1 min-w-60">
         <p className="font-semibold uppercase tracking-wider text-xs text-white">
           Suscríbete
         </p>
@@ -41,7 +41,7 @@ export const Footer = () => {
       </div>
 
       {/* POLÍTICAS Y ENLACES */}
-      <div className="flex flex-col gap-4 flex-1 min-w-[140px]">
+      <div className="flex flex-col gap-4 flex-1 min-w-35">
         <p className="font-semibold uppercase tracking-wider text-xs text-white">
           Políticas
         </p>
@@ -53,7 +53,7 @@ export const Footer = () => {
       </div>
 
       {/* REDES SOCIALES COMPLETA Y REPARADA */}
-      <div className="flex flex-col gap-4 flex-1 min-w-[200px]">
+      <div className="flex flex-col gap-4 flex-1 min-w-50">
         <p className="font-semibold uppercase tracking-wider text-xs text-white">Síguenos</p>
         <p className="text-xs leading-relaxed text-slate-400">No te pierdas lo que tiene LuckyPhone para ti</p>
 

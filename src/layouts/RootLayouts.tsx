@@ -5,6 +5,8 @@ import { Banner } from "../components/home/Banner";
 import { Newsletter } from "../components/home/Newsletter";
 import { useEffect, useState } from "react";
 import { HiArrowUp } from "react-icons/hi";
+// 🔥 NUEVO: Importamos la barra lateral del carrito
+import { CartSidebar } from "../components/cart/CartSidebar"; 
 
 export const RootLayouts = () => {
   const { pathname } = useLocation();
@@ -39,9 +41,12 @@ export const RootLayouts = () => {
 
       <Navbar />
 
+      {/* 🛒 NUEVO: Inyectamos la barra lateral aquí para que aparezca al hacer clic en la bolsa */}
+      <CartSidebar /> 
+
       {pathname === "/" && <Banner />}
 
-      <main className="container mx-auto my-8 flex-1">
+      <main className="container mx-auto my-8 flex-1 px-4">
         <Outlet />
       </main>
 

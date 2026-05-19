@@ -110,7 +110,7 @@ export const AboutPage = () => {
 
           <p className="text-slate-400 mb-6 text-xs md:text-sm max-w-xl mx-auto font-medium relative z-10">
             Contáctanos para recibir más información sobre nuestros productos
-            and promociones disponibles.
+            y promociones disponibles.
           </p>
 
           {/* 🛠️ CORREGIDO: Estructura del botón de WhatsApp restaurada dentro del bloque */}

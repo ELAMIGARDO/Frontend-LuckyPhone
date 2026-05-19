@@ -1,25 +1,31 @@
 import { createBrowserRouter } from "react-router-dom";
 import { RootLayouts } from "../layouts/RootLayouts";
-import { HomePage,CellPhonesPage,AboutPage } from "../pages";
+import { HomePage, CellPhonesPage, AboutPage } from "../pages";
+// Importa tu página de detalle (créala o usa una temporal por ahora)
+import { ProductDetailPage } from "../pages/ProductDetailPage"; 
 
 export const router = createBrowserRouter([
     {
         path: "/",
         element: <RootLayouts />,
-        children:[
+        children: [
             {
                 index: true, 
-                element: <HomePage/>,
+                element: <HomePage />,
             },
             {
                 path: "celulares",
-                element: <CellPhonesPage/>
+                element: <CellPhonesPage />
+            },
+            {
+                // 🔥 NUEVA RUTA: Captura el ID del celular (ej: /celulares/1)
+                path: "celulares/:id",
+                element: <ProductDetailPage /> 
             },
             {
                 path: "nosotros",
-                element: <AboutPage/>
+                element: <AboutPage />
             },
         ]
     }
-  ])
-
+]);
