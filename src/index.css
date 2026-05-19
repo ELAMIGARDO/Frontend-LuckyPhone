@@ -1,0 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+@import "tailwindcss";
+
+/* CORREGIDO: Se cambió :root por @theme para que Tailwind procese tus variables */
+@theme {
+  /* Registra la fuente Montserrat en Tailwind v4 */
+  --font-sans: "Montserrat", sans-serif;
+
+  /* Configuración del contenedor global */
+  --container-center: true;
+  --container-padding: 1rem;
+}
