@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 // 1. Molde exacto de lo que viene de tu Spring Boot
-interface ProductoDTO {
+export interface ProductoDTO {
   id: number;
   nombre: string;
   precio: number;
@@ -18,7 +18,7 @@ interface ProductoDTO {
 }
 
 // 2. Añadimos la propiedad de cantidad para el carrito
-interface CartItem extends ProductoDTO {
+export interface CartItem extends ProductoDTO {
   quantity: number;
 }
 

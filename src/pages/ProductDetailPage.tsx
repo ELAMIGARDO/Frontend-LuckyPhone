@@ -1,10 +1,9 @@
+import { useParams, useNavigate } from "react-router-dom"; // Conectado a tu archivo real
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import axios from "axios";
-import { FiShoppingBag, FiArrowLeft } from "react-icons/fi";
-import { useCart } from "../context/CartContext"; // Ajusta la ruta a tu context
+import { useCart, type CartItem } from "../context/CartContext";
 
-interface ProductoDTO {
+// Estructura idéntica a tu ProductoResponseDTO de Java (Spring Boot)
+export interface Producto {
   id: number;
   nombre: string;
   marca: string;
@@ -18,138 +17,185 @@ interface ProductoDTO {
   estado: string;
   bateria: string;
   imagenUrl: string;
-  whatsappLink: string; // Tu Spring Boot ya calcula este link individual
+  whatsappLink: string; // 👈 Ahora viene lleno gracias al cambio en Java
 }
 
-export const ProductDetailPage = () => {
+export const ProductDetailPages = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
-  const [producto, setProducto] = useState<ProductoDTO | null>(null);
-  const [cargando, setCargando] = useState(true);
 
+  const [producto, setProducto] = useState<Producto | null>(null);
+  const [cargando, setCargando] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Petición real al endpoint /api/productos/{id} que acabas de corregir
   useEffect(() => {
-    // Llamada a tu endpoint individual de Spring Boot: @GetMapping("/{id}")
-    axios.get(`http://localhost:8080/api/productos/${id}`)
-      .then((response) => {
-        setProducto(response.data);
+    if (!id) return;
+    setCargando(true);
+
+    fetch(`http://localhost:8080/api/productos/${id}`)
+      .then((res) => {
+        if (!res.ok)
+          throw new Error("No se pudo encontrar el equipo solicitado");
+        return res.json();
+      })
+      .then((data: Producto) => {
+        setProducto(data);
         setCargando(false);
       })
-      .catch((error) => {
-        console.error("Error al traer el detalle desde Spring Boot:", error);
+      .catch((err) => {
+        console.error("Error al conectar con la API:", err);
+        setError(err.message);
         setCargando(false);
       });
   }, [id]);
 
   if (cargando) {
-    return <div className="text-center py-32 font-medium text-gray-500">Cargando la ficha de LuckyPhone...</div>;
-  }
-
-  if (!producto) {
     return (
-      <div className="text-center py-32 max-w-md mx-auto px-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Equipo no encontrado</h2>
-        <p className="text-gray-600 mb-6">El celular que buscas no existe o fue retirado del catálogo.</p>
-        <Link to="/celulares" className="bg-purple-600 text-white px-6 py-2 rounded-xl">Volver al catálogo</Link>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm text-gray-500 font-medium">
+          Cargando ficha técnica...
+        </p>
       </div>
     );
   }
 
-  const isAgotado = producto.stock === 0;
+  if (error || !producto) {
+    return (
+      <div className="text-center py-20 max-w-md mx-auto px-6">
+        <p className="text-red-500 font-medium mb-4">
+          ⚠️ Error: {error || "El producto no existe."}
+        </p>
+        <button
+          onClick={() => navigate(-1)} // Regresa a la página anterior de forma segura
+          className="px-6 py-2 bg-slate-900 text-white text-sm rounded-xl font-bold"
+        >
+          Volver atrás
+        </button>
+      </div>
+    );
+  }
 
-  // Función para abrir el WhatsApp individual calculado por tu backend
+  const isAgotado = (producto.stock ?? 0) <= 0;
+
+  // Acción 1: Sumar a la bolsa de compras de React
+  const handleAñadirAlCarrito = () => {
+    // Transformamos el producto inyectando el 100% de las propiedades obligatorias
+    const itemParaCarrito: CartItem = {
+      id: producto.id,
+      nombre: producto.nombre,
+      precio: producto.precio,
+      imagenUrl: producto.imagenUrl,
+      whatsappLink: producto.whatsappLink,
+      color: producto.color || "Estándar",
+      stock: producto.stock ?? 1,
+      marca: producto.marca || "Genérico",
+      modelo: producto.modelo || "Estándar",
+      almacenamiento: producto.almacenamiento || "128GB",
+      ram: producto.ram || "6GB",
+      estado: producto.estado || "Nuevo",
+      bateria: producto.bateria || "100%",
+      quantity: 1, // Atributo específico del carrito de compras
+    };
+
+    addToCart(itemParaCarrito);
+  };
+
+  // Acción 2: Chatear por este celular en específico usando el link autogenerado
   const handleConsultarWhatsApp = () => {
     if (producto.whatsappLink) {
       window.open(producto.whatsappLink, "_blank");
-    } else {
-      alert("Enlace de WhatsApp no disponible para este producto.");
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 animate-fade-in">
-      {/* Botón de regreso */}
-      <Link to="/celulares" className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 hover:text-purple-700 mb-8 transition-colors">
-        <FiArrowLeft /> Volver al catálogo
-      </Link>
+    <div className="max-w-5xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center min-h-[calc(100vh-100px)]">
+      {/* Contenedor de Imagen */}
+      <div className="flex justify-center items-center bg-gray-50 rounded-3xl p-6 h-96 lg:h-112.5 relative shadow-sm border border-gray-100">
+        <img
+          src={producto.imagenUrl || "https://placeholder.com"}
+          alt={producto.nombre}
+          className="h-full object-contain mix-blend-multiply"
+        />
+        {isAgotado && (
+          <span className="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-black tracking-wide shadow-sm">
+            AGOTADO
+          </span>
+        )}
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-gray-100">
-        
-        {/* COLUMNA IZQUIERDA: Imagen del Teléfono */}
-        <div className="w-full h-96 lg:h-120 flex items-center justify-center bg-gray-50 rounded-2xl p-6 overflow-hidden relative group">
-          <img 
-            src={producto.imagenUrl || "https://placeholder.com"} 
-            alt={producto.nombre} 
-            className="h-full object-contain transform group-hover:scale-105 transition-transform duration-500"
-          />
-          {isAgotado && (
-            <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-              Agotado
+      {/* Bloque de Información Técnica */}
+      <div className="flex flex-col h-full justify-center gap-6">
+        <div>
+          <span className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2.5 py-1 rounded-md">
+            {producto.marca}
+          </span>
+          <h1 className="text-3xl font-black text-gray-900 mt-3">
+            {producto.nombre}
+          </h1>
+
+          <div className="flex flex-wrap gap-2 my-4 text-xs font-semibold text-gray-600">
+            <span className="bg-gray-100 px-3 py-1.5 rounded-xl">
+              💾 {producto.almacenamiento}
             </span>
-          )}
-        </div>
-
-        {/* COLUMNA DERECHA: Ficha Técnica Extensa */}
-        <div className="flex flex-col h-full">
-          <span className="text-xs font-bold uppercase text-purple-600 tracking-widest mb-1">{producto.marca}</span>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">{producto.nombre}</h1>
-          
-          <div className="text-2xl font-black text-blue-600 mb-6">
-            S/ {producto.precio.toFixed(2)}
+            <span className="bg-gray-100 px-3 py-1.5 rounded-xl">
+              ⚡ {producto.ram} RAM
+            </span>
+            <span className="bg-gray-100 px-3 py-1.5 rounded-xl">
+              🔋 Salud Batería: {producto.bateria}
+            </span>
+            <span className="bg-gray-100 px-3 py-1.5 rounded-xl">
+              ✨ Estado: {producto.estado}
+            </span>
           </div>
 
-          <p className="text-gray-600 leading-relaxed mb-6 border-b border-gray-100 pb-6">
-            {producto.descripcion || "Sin descripción disponible para este modelo."}
+          <p className="text-gray-500 text-sm leading-relaxed mt-2">
+            {producto.descripcion}
           </p>
-
-          {/* Grilla de especificaciones técnicas que jala tu DTO */}
-          <div className="grid grid-cols-2 gap-4 mb-8 bg-purple-50/50 p-5 rounded-2xl border border-purple-100/50 text-sm">
-            <div>
-              <span className="text-gray-500 block text-xs">Capacidad:</span>
-              <strong className="text-gray-800">{producto.almacenamiento}</strong>
-            </div>
-            <div>
-              <span className="text-gray-500 block text-xs">Memoria RAM:</span>
-              <strong className="text-gray-800">{producto.ram}</strong>
-            </div>
-            <div>
-              <span className="text-gray-500 block text-xs">Condición:</span>
-              <strong className="text-gray-800">{producto.estado}</strong>
-            </div>
-            <div>
-              <span className="text-gray-500 block text-xs">Salud de Batería:</span>
-              <strong className="text-gray-800">{producto.bateria}</strong>
-            </div>
-            <div>
-              <span className="text-gray-500 block text-xs">Color del Equipo:</span>
-              <strong className="text-gray-800">{producto.color}</strong>
-            </div>
-            <div>
-              <span className="text-gray-500 block text-xs">Disponibles:</span>
-              <strong className={`font-bold ${isAgotado ? 'text-red-500' : 'text-green-600'}`}>
-                {isAgotado ? 'Sin stock' : `${producto.stock} unidades`}
-              </strong>
-            </div>
-          </div>
-
-          {/* ACCIONES DE COMPRA */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-auto">
-            {/* Botón de añadir al carrito */}
-            <button
-              disabled={isAgotado}
-              onClick={() => addToCart(producto)}
-              className={`flex-1 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-98 border
-                ${isAgotado 
-                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' 
-                  : 'bg-white border-purple-600 text-purple-600 hover:bg-purple-50'
-                }`}
-            >
-              <FiShoppingBag /> Añadir a la Bolsa
-            </button>
- 
-          </div>
-
         </div>
 
+        {/* Visualización de Precios */}
+        <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
+          <div>
+            <span className="text-xs text-gray-400 block font-medium">
+              Precio final estimado
+            </span>
+            <span className="text-3xl font-black text-slate-900">
+              S/ {producto.precio.toFixed(2)}
+            </span>
+          </div>
+          <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-md font-medium">
+            Color: {producto.color || "Por defecto"}
+          </span>
+        </div>
+
+        {/* Botonera de Compra */}
+        <div className="flex flex-col gap-3 mt-4">
+          <button
+            disabled={isAgotado}
+            onClick={handleAñadirAlCarrito}
+            className={`w-full py-4 rounded-xl font-bold transition-all text-center text-sm shadow-md
+              ${
+                isAgotado
+                  ? "bg-gray-200 text-gray-400 border border-gray-300 cursor-not-allowed shadow-none"
+                  : "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-100"
+              }`}
+          >
+            {isAgotado
+              ? "Sin Stock Disponible"
+              : "🛒 Añadir a mi Bolsa de Compras"}
+          </button>
+
+          <button
+            onClick={handleConsultarWhatsApp}
+            className="w-full py-4 rounded-xl border-2 border-green-600 text-green-600 text-sm font-bold hover:bg-green-50/50 transition-colors flex items-center justify-center gap-2"
+          >
+            💬 Consultar stock inmediato por WhatsApp
+          </button>
+
+        </div>
       </div>
     </div>
   );

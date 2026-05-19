@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { RootLayouts } from "../layouts/RootLayouts";
 import { HomePage, CellPhonesPage, AboutPage } from "../pages";
 // Importa tu página de detalle (créala o usa una temporal por ahora)
-import { ProductDetailPage } from "../pages/ProductDetailPage"; 
+import { ProductDetailPages } from "../pages/ProductDetailPage"; 
 
 export const router = createBrowserRouter([
     {
@@ -20,7 +20,7 @@ export const router = createBrowserRouter([
             {
                 // 🔥 NUEVA RUTA: Captura el ID del celular (ej: /celulares/1)
                 path: "celulares/:id",
-                element: <ProductDetailPage /> 
+                element: <ProductDetailPages /> 
             },
             {
                 path: "nosotros",
