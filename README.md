@@ -1,8 +1,8 @@
-# 📱 LuckyPhone - E-Commerce de Celulares & iPhones (Frontend)
+# 📱 LuckyPhone - Comercio Electrónico de Celulares & iPhones (Interfaz Web)
 
-Bienvenido al repositorio oficial del cliente web **LuckyPhone**, una plataforma de e-commerce moderna, rápida y altamente estilizada diseñada para la venta y gestión de celulares y equipos **Apple iPhone**.
+Bienvenido al repositorio oficial del cliente web **LuckyPhone**, una plataforma de comercio electrónico moderna, rápida y altamente estilizada diseñada para la venta y gestión de celulares y equipos **Apple iPhone**.
 
-![LuckyPhone Banner](https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80)
+![Banner de LuckyPhone](https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80)
 
 ---
 
@@ -10,55 +10,55 @@ Bienvenido al repositorio oficial del cliente web **LuckyPhone**, una plataforma
 
 * **🛡️ Panel de Administración Exclusivo (`ROLE_ADMIN`)**:
   * Gestión centralizada de inventario y catálogo de celulares.
-  * Formulario completo con selectores estandarizados para Marca, Almacenamiento, RAM y Estado.
-  * Selector interactivo de imágenes con **Drag & Drop**, vista previa instantánea local y opción de URL web directa.
-  * Edición rápida y modal de detalle para cada producto.
+  * Formulario completo con selectores estandarizados para Marca, Almacenamiento, Memoria RAM y Estado del equipo.
+  * Selector interactivo de imágenes con **Arrastrar y Soltar (Drag & Drop)**, vista previa instantánea local y opción de URL web directa.
+  * Edición rápida y modal de vista detallada para cada producto.
 * **🔐 Autenticación JWT & Rutas Protegidas**:
-  * Control de acceso por roles (`ROLE_ADMIN` y `ROLE_USER`).
-  * Inicios de sesión persistentes en `localStorage` y logout seguro en la barra de navegación.
+  * Control de acceso por roles (`ROLE_ADMIN` para administradores y `ROLE_USER` para clientes).
+  * Inicios de sesión persistentes en el almacenamiento local y cierre de sesión seguro en la barra de navegación.
 * **🔍 Búsqueda & Filtros Especializados de iPhone**:
-  * Lupa en la barra de navegación con modal interactivo de búsqueda instantánea.
-  * Filtro lateral dinámico por línea de iPhone (iPhone 15 Pro Max, 15 Pro, 14, 13, etc.), capacidades de almacenamiento (`128GB`, `256GB`, `512GB`, `1TB`) y slider de presupuesto.
-* **⚡ Paginación Servidor-Cliente (Spring Boot)**:
-  * Integración fluida con el backend Spring Boot utilizando DTOs paginados (`PageResponse<ProductoResponseDTO>`).
+  * Lupa funcional en la barra de navegación con ventana modal de búsqueda en tiempo real.
+  * Filtro lateral dinámico por modelo de iPhone (iPhone 15 Pro Max, 15 Pro, 14, 13, etc.), capacidad de almacenamiento (`128GB`, `256GB`, `512GB`, `1TB`) y selector deslizable de presupuesto en soles.
+* **⚡ Paginación Servidor-Cliente (Conectado a Spring Boot)**:
+  * Integración directa con el servidor backend en Spring Boot utilizando objetos de transferencia de datos paginados (`PageResponse<ProductoResponseDTO>`).
 * **🎨 Experiencia Visual & Rendimiento**:
-  * Fondo WebGL interactivo en 3D (`ColorBends.tsx`) optimizado a 60 FPS.
-  * Diseño limpio y profesional con paleta neón azul/púrpura sobria.
+  * Fondo WebGL interactivo en 3D (`ColorBends.tsx`) optimizado a 60 fotogramas por segundo (FPS).
+  * Diseño limpio, moderno y elegante con una paleta de colores neón azul y púrpura sobre un fondo claro.
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
-* **Framework**: React 18 (Vite)
-* **Lenguaje**: TypeScript
-* **Estilos**: Tailwind CSS & Lucide Icons
-* **Gráficos 3D**: Three.js & `@react-three/fiber`
-* **Peticiones HTTP**: Axios
-* **Enrutado**: React Router DOM v6
+* **Marco de trabajo (Framework)**: React 18 (Vite)
+* **Lenguaje de programación**: TypeScript
+* **Estilos y Maquetación**: Tailwind CSS & Lucide Icons
+* **Gráficos y Animaciones 3D**: Three.js & `@react-three/fiber`
+* **Cliente de Peticiones HTTP**: Axios
+* **Enrutamiento**: React Router DOM v6
 
 ---
 
 ## 💻 Instalación y Configuración Local
 
 ### 1. Requisitos Previos
-* **Node.js**: v18.0 o superior
-* **npm**: v9.0 o superior
-* Backend **Backend-LuckyPhone** corriendo en `http://localhost:8080`
+* **Node.js**: Versión 18.0 o superior
+* **npm**: Versión 9.0 o superior
+* Backend **Backend-LuckyPhone** ejecutándose en `http://localhost:8080`
 
 ### 2. Pasos para Ejecutar
 
 ```bash
-# Clonar repositorio (o situarse en el directorio)
+# Entrar al directorio del proyecto
 cd Frontend-LuckyPhone-1
 
-# Instalar dependencias
+# Instalar las dependencias
 npm install
 
-# Iniciar servidor de desarrollo
+# Iniciar el servidor de desarrollo
 npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:3000`.
+La aplicación web estará disponible en la dirección: `http://localhost:3000`.
 
 ---
 
@@ -66,27 +66,27 @@ La aplicación estará disponible en `http://localhost:3000`.
 
 ```text
 src/
-├── api/                  # Configuración de cliente Axios e Interceptores JWT
-├── components/           # Componentes modulares
+├── api/                  # Configuración del cliente Axios e interceptores JWT
+├── components/           # Componentes reutilizables
 │   ├── cart/             # Carrito lateral de compras
-│   ├── home/             # Banners y grilla de características
-│   ├── products/         # Tarjetas de productos y filtros especializados
-│   ├── shared/           # Navbar, Footer y Separadores
-│   └── ui/               # Fondo WebGL (ColorBends) y modales
-├── interfaces/           # Contratos TypeScript / DTOs
-├── layouts/              # Layout de administración (AdminLayout)
-├── pages/                # Páginas principales (Home, Celulares, Admin, Login, Registro, Perfil)
-├── router/               # Rutas de React Router y HOC ProtectedRoute
-├── services/             # Servicios de integración con Backend Spring Boot
-└── main.tsx              # Punto de entrada principal
+│   ├── home/             # Banners y tarjetas informativas
+│   ├── products/         # Tarjetas de productos y filtros de iPhone
+│   ├── shared/           # Barra de navegación (Navbar), pie de página y separadores
+│   └── ui/               # Fondo animado 3D (ColorBends) y ventanas modales
+├── interfaces/           # Contratos y tipos de TypeScript / DTOs
+├── layouts/              # Estructura visual para administración (AdminLayout)
+├── pages/                # Páginas (Inicio, Celulares, Panel Admin, Iniciar Sesión, Registro, Perfil)
+├── router/               # Rutas de la aplicación y componente de rutas protegidas
+├── services/             # Servicios para consumir la API de Spring Boot
+└── main.tsx              # Punto de entrada principal de la aplicación
 ```
 
 ---
 
-## 🌿 Convención de Ramas
+## 🌿 Convención de Ramas para Trabajo
 
-* `main`: Producción y versiones estables.
-* `develop`: Rama activa de pruebas e integración de nuevas características.
+* `main`: Código probado listo para producción.
+* `develop`: Rama activa para pruebas, desarrollo y verificación de nuevas funcionalidades.
 
 ---
 
