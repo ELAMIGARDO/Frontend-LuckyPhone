@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 // 1. Molde exacto de lo que viene de tu Spring Boot
 export interface ProductoDTO {
@@ -36,8 +36,25 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  // Inicialización perezosa leyendo desde localStorage si existe
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const savedCart = localStorage.getItem('luckyphone_cart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isOpen, setIsOpen] = useState(false);
+
+  // Sincronizar cambios del carrito con localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('luckyphone_cart', JSON.stringify(cart));
+    } catch (e) {
+      console.error('Error guardando el carrito en localStorage', e);
+    }
+  }, [cart]);
 
   const addToCart = (producto: ProductoDTO) => {
     setCart((prevCart) => {
@@ -59,7 +76,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    localStorage.removeItem('luckyphone_cart');
+  };
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const cartTotal = cart.reduce((total, item) => total + item.precio * item.quantity, 0);

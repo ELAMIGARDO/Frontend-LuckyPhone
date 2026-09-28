@@ -1,52 +1,31 @@
-import { useParams, useNavigate } from "react-router-dom"; // Conectado a tu archivo real
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart, type CartItem } from "../context/CartContext";
-
-// Estructura idéntica a tu ProductoResponseDTO de Java (Spring Boot)
-export interface Producto {
-  id: number;
-  nombre: string;
-  marca: string;
-  modelo: string;
-  descripcion: string;
-  precio: number;
-  stock: number;
-  almacenamiento: string;
-  ram: string;
-  color: string;
-  estado: string;
-  bateria: string;
-  imagenUrl: string;
-  whatsappLink: string; // 👈 Ahora viene lleno gracias al cambio en Java
-}
+import { getProductoByIdService } from "../services/backendService";
+import type { ProductoResponseDTO } from "../interfaces";
 
 export const ProductDetailPages = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  const [producto, setProducto] = useState<Producto | null>(null);
+  const [producto, setProducto] = useState<ProductoResponseDTO | null>(null);
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Petición real al endpoint /api/productos/{id} que acabas de corregir
+  // Petición al endpoint /api/productos/{id} usando Axios centralizado
   useEffect(() => {
     if (!id) return;
     setCargando(true);
 
-    fetch(`http://localhost:8080/api/productos/${id}`)
-      .then((res) => {
-        if (!res.ok)
-          throw new Error("No se pudo encontrar el equipo solicitado");
-        return res.json();
-      })
-      .then((data: Producto) => {
+    getProductoByIdService(id)
+      .then((data) => {
         setProducto(data);
         setCargando(false);
       })
       .catch((err) => {
         console.error("Error al conectar con la API:", err);
-        setError(err.message);
+        setError(err.response?.data?.message || err.message || "No se pudo encontrar el equipo solicitado");
         setCargando(false);
       });
   }, [id]);

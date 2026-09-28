@@ -27,8 +27,20 @@ export const CartSidebar = () => {
     // 2. Extraemos la base limpia (Ej: "https://wa.me") provista por el back-end
     const baseWhatsappUrl = primerItem.whatsappLink?.split("?")[0] ?? "https://wa.me";
 
-    // 3. Estructuramos el mensaje consolidado para la tienda
-    let mensaje = "🛒 *¡Hola LuckyPhone! Quiero concretar la compra de los siguientes equipos de mi carrito:* \n\n";
+    // 3. Obtenemos datos de la sesión activa del cliente si inició sesión
+    let infoCliente = "";
+    try {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj.email) {
+          infoCliente = ` (Cliente: ${userObj.email})`;
+        }
+      }
+    } catch (_) {}
+
+    // 4. Estructuramos el mensaje consolidado para la tienda
+    let mensaje = `🛒 *¡Hola LuckyPhone! Quiero concretar la compra de los siguientes equipos de mi carrito${infoCliente}:* \n\n`;
 
     cart.forEach((item: CartItem) => {
       mensaje += `📱 *${item.nombre}*\n`;
@@ -39,7 +51,7 @@ export const CartSidebar = () => {
     mensaje += `💰 *TOTAL A PAGAR: S/ ${cartTotal.toFixed(2)}*\n\n`;
     mensaje += "¿Tienen la disponibilidad de stock para coordinar la entrega?";
 
-    // 4. Adjuntamos el texto del carrito codificado a la URL base de tu servidor
+    // 5. Adjuntamos el texto del carrito codificado a la URL base de tu servidor
     const urlFinal = `${baseWhatsappUrl}?text=${encodeURIComponent(mensaje)}`;
     window.open(urlFinal, "_blank");
 

@@ -6,17 +6,17 @@ export const Banner = () => {
   return (
     <div className="relative bg-black text-white overflow-hidden select-none min-h-[70vh] flex items-center justify-center">
       
-      {/* Fondo ColorBends con tus propiedades exactas */}
+      {/* Fondo ColorBends con la paleta oficial de LuckyPhone */}
       <div className="absolute inset-0 z-0 w-full h-full pointer-events-none">
         <ColorBends
-          colors={["#7c3aed", "#2563eb", "#ff5c7a", "#000000"]}
+          colors={["#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#000000"]}
           rotation={90}
           speed={0.2}
           scale={1}
           frequency={1}
           warpStrength={1}
           mouseInfluence={1}
-          noise={0.15}
+          noise={0.12}
           parallax={0.5}
           iterations={1}
           intensity={1.5}
@@ -28,15 +28,15 @@ export const Banner = () => {
 
       {/* Overlay oscuro para legibilidad */}
       <div className="absolute inset-0 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0.25), rgba(0,0,0,0.65))" }}
+        style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.3), rgba(0,0,0,0.7))" }}
       />
 
       {/* Contenido */}
       <div className="relative z-20 flex flex-col items-center justify-center py-24 px-6 text-center lg:py-44 lg:px-8 max-w-5xl mx-auto">
 
         {/* Badge */}
-        <span className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-amber-400 uppercase tracking-widest opacity-80"
-          style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+        <span className="mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium text-purple-300 uppercase tracking-widest opacity-90"
+          style={{ background: "rgba(139, 92, 246, 0.15)", border: "1px solid rgba(168, 85, 247, 0.3)" }}
         >
           ✨ Nueva Colección 2026
         </span>
@@ -82,11 +82,11 @@ export const Banner = () => {
           to="/celulares"
           className="group relative inline-flex items-center justify-center text-white font-bold py-4 px-10 rounded-xl overflow-hidden transition-all duration-300 ease-in-out hover:scale-105 z-20"
           style={{
-            background: "linear-gradient(to right, #2563eb, #4f46e5)",
-            boxShadow: "0 0 30px rgba(37,99,235,0.5)",
+            background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%)",
+            boxShadow: "0 0 30px rgba(139, 92, 246, 0.5)",
           }}
-          onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 40px rgba(99,102,241,0.8)"}
-          onMouseLeave={e => e.currentTarget.style.boxShadow = "0 0 30px rgba(37,99,235,0.5)"}
+          onMouseEnter={e => e.currentTarget.style.boxShadow = "0 0 45px rgba(168, 85, 247, 0.8)"}
+          onMouseLeave={e => e.currentTarget.style.boxShadow = "0 0 30px rgba(139, 92, 246, 0.5)"}
         >
           <span className="relative z-10 flex items-center gap-2 text-lg tracking-wide">
             Ver Productos

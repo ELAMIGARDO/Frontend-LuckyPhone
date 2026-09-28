@@ -28,8 +28,8 @@ export const CardProduct = ({ producto }: Props) => {
 
   return (
     <div className="flex flex-col relative gap-6">
-      {/* Redirección al detalle usando el ID */}
-      <Link to={`/celulares/${producto?.id || 1}`} className="flex relative group overflow-hidden bg-gray-50 rounded-2xl">
+      {/* Redirección al detalle usando el ID numérico o string del producto */}
+      <Link to={`/celulares/${producto?.id}`} className="flex relative group overflow-hidden bg-gray-50 rounded-2xl">
         <div className="flex h-87.5 w-full items-center justify-center py-4 lg:h-62.5">
           <img
             src={producto?.imagenUrl || "https://placeholder.com"}

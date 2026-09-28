@@ -194,11 +194,14 @@ export default function ColorBends({
     const renderer = new THREE.WebGLRenderer({
       antialias: false,
       powerPreference: 'high-performance',
-      alpha: true
+      alpha: true,
+      precision: 'mediump'
     });
     rendererRef.current = renderer;
     (renderer as any).outputColorSpace = (THREE as any).SRGBColorSpace;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // Limitar el dpr a máximo 1.25 para evitar tirones/lag en celulares y pantallas 4K sin perder estética
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+    renderer.setPixelRatio(dpr);
     renderer.setClearColor(0x000000, transparent ? 0 : 1);
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';

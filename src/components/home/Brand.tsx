@@ -5,12 +5,7 @@ const brand = [
         image: './img/brand/Apple-Logo.webp',
         alt: 'Apple',
         hoverBorder: 'hover:border-purple-400/60 hover:shadow-purple-600/5'
-    },
-    {
-        image: './img/brand/Samsung_Logo.webp',
-        alt: 'Samsung',
-        hoverBorder: 'hover:border-blue-400/60 hover:shadow-blue-600/5'
-    },
+    }
 ];
 
 export const Brand = () => {
@@ -50,7 +45,7 @@ export const Brand = () => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
-        className="w-full max-w-lg mt-8 grid grid-cols-2 gap-4 md:gap-6"
+        className="w-full max-w-xs mt-8 flex justify-center"
       >
           {brand.map((item, index) => (
               <motion.div 
@@ -58,7 +53,7 @@ export const Brand = () => {
                 variants={itemVariants}
                 whileHover={{ y: -5 }} 
                 whileTap={{ scale: 0.98 }}
-                className={`p-6 bg-white rounded-2xl border border-slate-100 flex items-center justify-center h-28 hover:shadow-2xl transition-all duration-300 group cursor-pointer ${item.hoverBorder}`}
+                className={`w-full p-6 bg-white rounded-2xl border border-slate-100 flex items-center justify-center h-28 hover:shadow-xl transition-all duration-300 group cursor-pointer ${item.hoverBorder}`}
               >
                   <img 
                     src={item.image} 
