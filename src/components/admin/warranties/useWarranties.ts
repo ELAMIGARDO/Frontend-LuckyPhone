@@ -23,74 +23,17 @@ export interface Garantia {
   eliminadoAt: string | null;
 }
 
-const initialGarantiasDemo: Garantia[] = [
-  {
-    id: 'G-101',
-    cliente: 'Juan Pérez Gómez',
-    dni: '74839201',
-    celular: 'Apple iPhone 15 Pro Max 256GB',
-    categoria: 'Celulares',
-    imei1: '358921094857102',
-    imei2: '358921094857103',
-    numeroSerie: 'F2LQX980P0DX',
-    activacion: '07/10/2026',
-    caducidad: '07/10/2027',
-    duracionGarantia: '12 Meses',
-    diasRestantes: 363,
-    estado: 'Vigente',
-    alerta: false,
-    eliminadoAt: null
-  },
-  {
-    id: 'G-102',
-    cliente: 'María López Silva',
-    dni: '71928304',
-    celular: 'Samsung Galaxy S24 Ultra',
-    categoria: 'Celulares',
-    imei1: '359102948571029',
-    numeroSerie: 'R5CW901X88K',
-    activacion: '15/09/2026',
-    caducidad: '15/03/2027',
-    duracionGarantia: '6 Meses',
-    diasRestantes: 157,
-    estado: 'Vigente',
-    alerta: false,
-    eliminadoAt: null
-  },
-  {
-    id: 'G-103',
-    cliente: 'Carlos Mendoza',
-    dni: '45892019',
-    celular: 'Cargador Anker 65W Fast Charge',
-    categoria: 'Cargadores',
-    numeroSerie: 'ANK-90182746',
-    activacion: '01/01/2025',
-    caducidad: '01/04/2025',
-    duracionGarantia: '3 Meses',
-    diasRestantes: -281,
-    estado: 'Caducado',
-    alerta: true,
-    eliminadoAt: null
-  },
-  {
-    id: 'G-104',
-    cliente: 'Ana Patricia Torres',
-    dni: '10293847',
-    celular: 'Audífonos AirPods Pro 2da Gen',
-    categoria: 'Audífonos',
-    numeroSerie: 'GX9012837461',
-    activacion: '10/05/2026',
-    caducidad: '10/05/2028',
-    duracionGarantia: '24 Meses',
-    diasRestantes: 578,
-    estado: 'Vigente',
-    alerta: false,
-    eliminadoAt: '2026-10-08T14:30:00'
-  }
-];
-
 export const useWarranties = () => {
-  const [garantias, setGarantias] = useState<Garantia[]>(initialGarantiasDemo);
+  const [garantias, setGarantias] = useState<Garantia[]>(() => {
+    const localSaved = localStorage.getItem('luckyphone_garantias_local');
+    if (localSaved) {
+      try {
+        const parsed = JSON.parse(localSaved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    return [];
+  });
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'todos' | 'vigentes' | 'caducados' | 'anulados'>('todos');
   const [filtroCobertura, setFiltroCobertura] = useState<string>('todos');
@@ -101,62 +44,54 @@ export const useWarranties = () => {
 
   useEffect(() => {
     const isAnulados = activeTab === 'anulados';
-    
-    // 1. Cargar ediciones locales de localStorage primero (si existen)
-    const localSaved = localStorage.getItem('luckyphone_garantias_local');
-    if (localSaved) {
-      try {
-        const parsed = JSON.parse(localSaved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setGarantias(parsed);
-        }
-      } catch (e) {}
-    }
 
-    // 2. Intentar actualizar desde el servidor de backend
+    // Consultar directamente al servidor de backend
     luckyphoneApi.get(`/garantias?anulados=${isAnulados}&filtro=${activeTab}&query=${encodeURIComponent(searchTerm)}`)
       .then(res => {
         const rawList = res.data && Array.isArray(res.data.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
-        if (rawList.length > 0) {
-          const hoy = new Date();
-          const mappedList: Garantia[] = rawList.map((g: any) => {
-            let dias = g.diasRestantes;
-            if (g.fechaCaducidad) {
-              const cad = new Date(g.fechaCaducidad);
-              if (!isNaN(cad.getTime())) {
-                const diff = cad.getTime() - hoy.getTime();
-                dias = Math.ceil(diff / (1000 * 60 * 60 * 24));
-              }
+        const hoy = new Date();
+        const mappedList: Garantia[] = rawList.map((g: any) => {
+          let dias = g.diasRestantes;
+          if (g.fechaCaducidad) {
+            const cad = new Date(g.fechaCaducidad);
+            if (!isNaN(cad.getTime())) {
+              const diff = cad.getTime() - hoy.getTime();
+              dias = Math.ceil(diff / (1000 * 60 * 60 * 24));
             }
-
-            return {
-              id: g.id || g.idGarantia || 'G-100',
-              cliente: g.clienteNombre || g.cliente || 'Cliente General',
-              dni: g.clienteDni || g.dni || '00000000',
-              celular: g.productoModelo || g.celular || 'Producto',
-              categoria: g.categoria || 'Celulares',
-              imei1: g.imei1 || '',
-              imei2: g.imei2 || '',
-              numeroSerie: g.numeroSerie || '',
-              activacion: g.fechaEmision ? new Date(g.fechaEmision).toLocaleDateString('es-PE') : g.activacion || '01/01/2026',
-              caducidad: g.fechaCaducidad ? new Date(g.fechaCaducidad).toLocaleDateString('es-PE') : g.caducidad || '01/01/2026',
-              duracionGarantia: g.duracionGarantia || '12 Meses',
-              diasRestantes: typeof dias === 'number' ? dias : 30,
-              estado: dias > 0 ? 'Vigente' : 'Caducado',
-              alerta: dias <= 0,
-              eliminadoAt: g.eliminadoAt || null,
-              precioBase: g.precioBase || g.precioFinal || 0
-            };
-          });
-
-          // Mezclar manteniendo cambios guardados en sesión local
-          if (!localSaved) {
-            setGarantias(mappedList);
           }
-        }
+
+          return {
+            id: g.id || g.idGarantia || 'G-100',
+            cliente: g.clienteNombre || g.cliente || 'Cliente General',
+            dni: g.clienteDni || g.dni || '00000000',
+            celular: g.productoModelo || g.celular || 'Producto',
+            categoria: g.categoria || 'Celulares',
+            imei1: g.imei1 || '',
+            imei2: g.imei2 || '',
+            numeroSerie: g.numeroSerie || '',
+            activacion: g.fechaEmision ? new Date(g.fechaEmision).toLocaleDateString('es-PE') : g.activacion || '01/01/2026',
+            caducidad: g.fechaCaducidad ? new Date(g.fechaCaducidad).toLocaleDateString('es-PE') : g.caducidad || '01/01/2026',
+            duracionGarantia: g.duracionGarantia || '12 Meses',
+            diasRestantes: typeof dias === 'number' ? dias : 30,
+            estado: dias > 0 ? 'Vigente' : 'Caducado',
+            estadoPago: g.estadoPago || 'PENDIENTE',
+            alerta: dias <= 0,
+            eliminadoAt: g.eliminadoAt || null,
+            precioBase: g.precioBase || g.precioFinal || 0
+          };
+        });
+
+        setGarantias(mappedList);
+        localStorage.setItem('luckyphone_garantias_local', JSON.stringify(mappedList));
       })
       .catch(() => {
-        // Fallback transparente
+        // En caso de que el backend esté apagado, leer del almacenamiento local
+        const localSaved = localStorage.getItem('luckyphone_garantias_local');
+        if (localSaved) {
+          try {
+            setGarantias(JSON.parse(localSaved));
+          } catch (e) {}
+        }
       });
   }, [activeTab, searchTerm]);
 
