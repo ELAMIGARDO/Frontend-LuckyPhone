@@ -6,7 +6,8 @@ import {
   FaShieldAlt, 
   FaStar, 
   FaSignOutAlt,
-  FaStore
+  FaStore,
+  FaCog
 } from 'react-icons/fa';
 import type { TabType } from '../../interfaces/luckyPhoneTypes';
 
@@ -29,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'proforma' as TabType, label: 'Emitir Proforma', icon: FaFileInvoiceDollar },
     { id: 'warranties' as TabType, label: 'Control de Garantías', icon: FaShieldAlt },
     { id: 'reviews' as TabType, label: 'Reseñas de Clientes', icon: FaStar },
+    { id: 'settings' as TabType, label: 'Ajustes del Sistema', icon: FaCog },
   ];
 
   return (

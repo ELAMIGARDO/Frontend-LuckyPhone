@@ -17,7 +17,7 @@ export const getProductosPaginadosService = async (page = 0, size = 12): Promise
     const { data } = await luckyphoneApi.get<PageResponse<ProductoResponseDTO>>(`/productos/lista`, {
       params: { page, size }
     });
-    
+
     const localSaved: ProductoResponseDTO[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
     const activeLocal = localSaved.filter((p: any) => p.activo !== false);
 
@@ -83,30 +83,11 @@ export const getProductosAdminListaCompletaService = async (): Promise<ProductoR
   }
 };
 
-export const getColoresDisponiblesService = async (): Promise<string[]> => {
-  try {
-    const { data } = await luckyphoneApi.get<string[]>(`/productos/colores-disponibles`);
-    if (Array.isArray(data) && data.length > 0) {
-      return data;
-    }
-  } catch (error) {
-    console.warn("No se pudo obtener colores del endpoint dedicado. Extrayendo de productos en memoria.", error);
-  }
-  // Fallback seguro: extraer de productos en localStorage o memoria
-  try {
-    const prods = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
-    const unique = Array.from(new Set(prods.map((p: any) => p.color?.trim()).filter(Boolean))) as string[];
-    return unique.sort();
-  } catch {
-    return ['Negro', 'Blanco', 'Titanio Natural', 'Titanio Azul', 'Titanio Negro', 'Plata', 'Oro'];
-  }
-};
-
 export const guardarProductoLocalService = (prod: any) => {
   try {
     const prev = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
     const existingIndex = prev.findIndex((p: any) => String(p.id) === String(prod.id) || (p.modelo && p.modelo === prod.modelo));
-    
+
     const newProd: ProductoResponseDTO & { imei?: string; imei2?: string; numeroSerie?: string; activo?: boolean } = {
       id: prod.id || Date.now(),
       nombre: prod.nombre || `${prod.marca || ''} ${prod.modelo || ''}`,
@@ -260,4 +241,46 @@ export const anularGarantiaService = async (id: string) => {
 export const emitirGarantiaService = async (garantiaData: any) => {
   const { data } = await luckyphoneApi.post(`/garantias`, garantiaData);
   return data;
+};
+
+// ==========================================
+// SERVICIOS PARA ATRIBUTOS DINAMICOS Y AJUSTES
+// ==========================================
+
+export const getAtributosConfigService = async () => {
+  try {
+    const { data } = await luckyphoneApi.get(`/configuraciones/atributos`);
+    return data;
+  } catch {
+    const local = localStorage.getItem('luckyphone_atributos_config');
+    if (local) return JSON.parse(local);
+    const defaults = {
+      almacenamientos: [
+        { id: 1, texto: '64GB', activo: true },
+        { id: 2, texto: '128GB', activo: true },
+        { id: 3, texto: '256GB', activo: true },
+        { id: 4, texto: '512GB', activo: true },
+        { id: 5, texto: '1TB', activo: true },
+        { id: 6, texto: 'N/A', activo: true }
+      ],
+      memoriasRam: [
+        { id: 1, texto: '4GB', activo: true },
+        { id: 2, texto: '6GB', activo: true },
+        { id: 3, texto: '8GB', activo: true },
+        { id: 4, texto: '12GB', activo: true },
+        { id: 5, texto: '16GB', activo: true },
+        { id: 6, texto: 'N/A', activo: true }
+      ],
+      colores: [
+        { id: 1, texto: 'Titanio Natural', codigoHex: '#A3998C', activo: true },
+        { id: 2, texto: 'Titanio Negro', codigoHex: '#3C3B3A', activo: true },
+        { id: 3, texto: 'Titanio Blanco', codigoHex: '#F2F1ED', activo: true },
+        { id: 4, texto: 'Titanio Desierto', codigoHex: '#C5B49E', activo: true },
+        { id: 5, texto: 'Negro Espacial', codigoHex: '#1E1E1F', activo: true },
+        { id: 6, texto: 'Azul Sierra', codigoHex: '#69889E', activo: true }
+      ]
+    };
+    localStorage.setItem('luckyphone_atributos_config', JSON.stringify(defaults));
+    return defaults;
+  }
 };

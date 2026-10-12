@@ -16,6 +16,8 @@ import { DeviceFormModal } from '../components/admin/DeviceFormModal';
 import type { DeviceFormData } from '../components/admin/DeviceFormModal';
 import { MetricsOverview } from '../components/admin/MetricsOverview';
 import { WarrantiesTable } from '../components/admin/WarrantiesTable';
+import { SettingsPage } from './SettingsPage';
+import { FaSlidersH } from 'react-icons/fa';
 import {
   crearProductoService,
   actualizarProductoService,
@@ -170,12 +172,12 @@ export const AdminDashboardPage: React.FC = () => {
     const existingItems = (item.itemsCelulares && item.itemsCelulares.length > 0)
       ? item.itemsCelulares
       : (item.imei || item.imei1 ? [{
-          imei1: item.imei || item.imei1 || '',
-          imei2: item.imei2 || '',
-          numeroSerial: item.numeroSerie || item.numeroSerial || '',
-          bateria: item.bateria || '100%',
-          estadoDispositivo: 'Disponible' as const
-        }] : []);
+        imei1: item.imei || item.imei1 || '',
+        imei2: item.imei2 || '',
+        numeroSerial: item.numeroSerie || item.numeroSerial || '',
+        bateria: item.bateria || '100%',
+        estadoDispositivo: 'Disponible' as const
+      }] : []);
 
     setFormData({
       modelo: item.modelo,
@@ -291,20 +293,20 @@ export const AdminDashboardPage: React.FC = () => {
     const itemsPayload = isCelular ? (
       (formData.itemsCelulares && formData.itemsCelulares.length > 0)
         ? formData.itemsCelulares.map(item => ({
-            id: item.id,
-            imei1: item.imei1,
-            imei2: item.imei2,
-            numeroSerial: item.numeroSerial,
-            bateria: item.bateria || formData.bateria || '100%',
-            estadoDispositivo: item.estadoDispositivo || 'Disponible'
-          }))
+          id: item.id,
+          imei1: item.imei1,
+          imei2: item.imei2,
+          numeroSerial: item.numeroSerial,
+          bateria: item.bateria || formData.bateria || '100%',
+          estadoDispositivo: item.estadoDispositivo || 'Disponible'
+        }))
         : [{
-            imei1: formData.imei,
-            imei2: formData.imei2,
-            numeroSerial: formData.numeroSerie,
-            bateria: formData.bateria || '100%',
-            estadoDispositivo: 'Disponible' as const
-          }]
+          imei1: formData.imei,
+          imei2: formData.imei2,
+          numeroSerial: formData.numeroSerie,
+          bateria: formData.bateria || '100%',
+          estadoDispositivo: 'Disponible' as const
+        }]
     ) : undefined;
 
     const calculatedStock = isCelular && itemsPayload
@@ -410,6 +412,7 @@ export const AdminDashboardPage: React.FC = () => {
                 {activeTab === 'proforma' && <><FaFileInvoiceDollar className="text-purple-600" /> Emisión de Proforma y Garantía</>}
                 {activeTab === 'warranties' && <><FaShieldAlt className="text-purple-600" /> Control de Garantías de Hardware</>}
                 {activeTab === 'reviews' && <><FaStar className="text-amber-500" /> Reseñas de Clientes</>}
+                {activeTab === 'settings' && <><FaSlidersH className="text-purple-600" /> Ajustes y Configuración Dinámica</>}
               </h2>
               <p className="text-xs text-slate-500 font-medium hidden sm:block">
                 Panel Administrativo Lucky Phone S.A.C.
@@ -462,6 +465,8 @@ export const AdminDashboardPage: React.FC = () => {
           )}
 
           {activeTab === 'reviews' && <CustomerReviews />}
+
+          {activeTab === 'settings' && <SettingsPage />}
         </main>
       </div>
 
@@ -473,7 +478,6 @@ export const AdminDashboardPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveDevice}
         onFileUpload={handleFileUpload}
-        coloresExistentes={Array.from(new Set(inventory.map(i => i.color?.trim()).filter(Boolean) as string[])).sort()}
       />
     </div>
   );

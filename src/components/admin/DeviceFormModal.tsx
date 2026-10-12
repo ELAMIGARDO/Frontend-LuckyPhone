@@ -11,7 +11,8 @@ import {
   FaTrashAlt
 } from 'react-icons/fa';
 
-import { getColoresDisponiblesService } from '../../services/backendService';
+import { getAtributosConfigService } from '../../services/backendService';
+import type { AtributoConfig } from '../../interfaces/luckyPhoneTypes';
 
 export interface DeviceFormData {
   modelo: string;
@@ -48,7 +49,6 @@ interface DeviceFormModalProps {
   onClose: () => void;
   onSave: (e: React.FormEvent) => void;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  coloresExistentes?: string[];
 }
 
 export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
@@ -58,24 +58,23 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
   setFormData,
   onClose,
   onSave,
-  onFileUpload,
-  coloresExistentes: propColores
+  onFileUpload
 }) => {
-  const [colores, setColores] = React.useState<string[]>(propColores || []);
+  const [almacenamientos, setAlmacenamientos] = React.useState<AtributoConfig[]>([]);
+  const [memoriasRam, setMemoriasRam] = React.useState<AtributoConfig[]>([]);
+  const [colores, setColores] = React.useState<AtributoConfig[]>([]);
 
   React.useEffect(() => {
-    if (propColores && propColores.length > 0) {
-      setColores(propColores);
-    } else if (isOpen) {
-      getColoresDisponiblesService()
-        .then((data) => {
-          if (data && data.length > 0) {
-            setColores(data);
-          }
-        })
-        .catch((err) => console.error("Error al cargar colores en modal:", err));
+    if (isOpen) {
+      getAtributosConfigService().then(data => {
+        if (data) {
+          setAlmacenamientos((data.almacenamientos || []).filter((a: AtributoConfig) => a.activo));
+          setMemoriasRam((data.memoriasRam || []).filter((r: AtributoConfig) => r.activo));
+          setColores((data.colores || []).filter((c: AtributoConfig) => c.activo));
+        }
+      });
     }
-  }, [isOpen, propColores]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -107,7 +106,7 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
 
         {/* Form Completo */}
         <form onSubmit={onSave} className="p-6 overflow-y-auto space-y-5 text-xs font-semibold flex-1">
-          
+
           {/* FILA 1: CATEGORÍA, MODELO/NOMBRE & VISIBILIDAD */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -171,7 +170,7 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
                 className={`w-full py-2.5 px-4 rounded-xl font-extrabold flex items-center justify-center gap-2 border transition-all cursor-pointer ${formData.activo
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
                   : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
-                }`}
+                  }`}
               >
                 {formData.activo ? (
                   <>
@@ -244,56 +243,69 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
           {/* ESPECIFICACIONES TÉCNICAS */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-slate-700 mb-1">Almacenamiento / Capacidad</label>
+              <label className="block text-slate-700 mb-1">Almacenamiento / Capacidad *</label>
               <select
                 value={formData.almacenamiento}
                 onChange={(e) => setFormData({ ...formData, almacenamiento: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-medium bg-white"
               >
-                <option value="N/A">N/A (No Aplica)</option>
-                <option value="64GB">64 GB</option>
-                <option value="128GB">128 GB</option>
-                <option value="256GB">256 GB</option>
-                <option value="512GB">512 GB</option>
-                <option value="1TB">1 TB</option>
-                <option value="2TB">2 TB</option>
+                {almacenamientos.length > 0 ? (
+                  almacenamientos.map((alm) => (
+                    <option key={alm.id} value={alm.texto}>
+                      {alm.texto}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="128GB">128GB</option>
+                    <option value="256GB">256GB</option>
+                    <option value="512GB">512GB</option>
+                    <option value="1TB">1TB</option>
+                    <option value="N/A">N/A</option>
+                  </>
+                )}
               </select>
             </div>
 
             <div>
-              <label className="block text-slate-700 mb-1">Memoria RAM</label>
+              <label className="block text-slate-700 mb-1">Memoria RAM *</label>
               <select
                 value={formData.ram}
                 onChange={(e) => setFormData({ ...formData, ram: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-medium bg-white"
               >
-                <option value="N/A">N/A (No Aplica)</option>
-                <option value="4GB">4 GB RAM</option>
-                <option value="6GB">6 GB RAM</option>
-                <option value="8GB">8 GB RAM</option>
-                <option value="12GB">12 GB RAM</option>
-                <option value="16GB">16 GB RAM</option>
+                {memoriasRam.length > 0 ? (
+                  memoriasRam.map((ramItem) => (
+                    <option key={ramItem.id} value={ramItem.texto}>
+                      {ramItem.texto}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="6GB">6GB</option>
+                    <option value="8GB">8GB</option>
+                    <option value="12GB">12GB</option>
+                    <option value="16GB">16GB</option>
+                    <option value="N/A">N/A</option>
+                  </>
+                )}
               </select>
             </div>
 
-            <div className="flex flex-col">
-              <label htmlFor="color-input" className="block text-slate-700 mb-1">
-                Color del Equipo
-              </label>
-              <input
-                id="color-input"
-                list="colores-sugeridos"
-                type="text"
-                placeholder="Escribe o selecciona un color (Ej: Titanio Natural)"
+            <div>
+              <label className="block text-slate-700 mb-1">Color del Equipo *</label>
+              <select
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 text-sm font-medium bg-white"
-              />
-              <datalist id="colores-sugeridos">
-                {colores.map((col, idx) => (
-                  <option key={`${col}-${idx}`} value={col} />
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-medium bg-white"
+              >
+                <option value="">-- Seleccionar Color --</option>
+                {colores.map((col) => (
+                  <option key={col.id} value={col.texto}>
+                    {col.texto}
+                  </option>
                 ))}
-              </datalist>
+              </select>
             </div>
           </div>
 
@@ -344,13 +356,12 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-extrabold text-purple-900 bg-purple-100/70 px-2.5 py-0.5 rounded-lg flex items-center gap-1.5">
                           <span>📱 Unidad #{index + 1}</span>
-                          <span className={`text-[10px] px-2 py-0.2 rounded-full font-bold ${
-                            item.estadoDispositivo === 'Vendido'
+                          <span className={`text-[10px] px-2 py-0.2 rounded-full font-bold ${item.estadoDispositivo === 'Vendido'
                               ? 'bg-rose-100 text-rose-700'
                               : item.estadoDispositivo === 'Reservado'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-emerald-100 text-emerald-700'
-                          }`}>
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-emerald-100 text-emerald-700'
+                            }`}>
                             {item.estadoDispositivo || 'Disponible'}
                           </span>
                         </span>
@@ -448,9 +459,8 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
                               updated[index] = { ...updated[index], bateria: val };
                               setFormData({ ...formData, itemsCelulares: updated });
                             }}
-                            className={`w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 font-bold text-xs ${
-                              formData.estado === 'Nuevo / Sellado' ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'
-                            }`}
+                            className={`w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 font-bold text-xs ${formData.estado === 'Nuevo / Sellado' ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'
+                              }`}
                           />
                         </div>
                       </div>
@@ -545,9 +555,8 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
                 disabled={isCelularCategory && !!editingId}
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-bold ${
-                  isCelularCategory && !!editingId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'
-                }`}
+                className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-bold ${isCelularCategory && !!editingId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'
+                  }`}
               />
               {isCelularCategory && (
                 <p className="text-[10px] text-purple-700 font-semibold mt-1">

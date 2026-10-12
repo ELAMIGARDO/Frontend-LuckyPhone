@@ -1,4 +1,25 @@
-export type TabType = 'metrics' | 'inventory' | 'proforma' | 'warranties' | 'reviews';
+export type TabType = 'metrics' | 'inventory' | 'proforma' | 'warranties' | 'reviews' | 'settings';
+
+export interface AtributoConfig {
+  id: number;
+  texto: string;
+  activo: boolean;
+  codigoHex?: string;
+}
+
+export interface ConfigAtributosResponse {
+  almacenamientos: AtributoConfig[];
+  memoriasRam: AtributoConfig[];
+  colores: AtributoConfig[];
+}
+
+export interface UsuarioAdmin {
+  id: number;
+  nombre: string;
+  email: string;
+  rol: 'ROLE_ADMIN' | 'ROLE_USER';
+  activo: boolean;
+}
 
 export interface CustomerData {
   nombreCompleto: string;
@@ -15,6 +36,8 @@ export interface CompanyData {
   telefono: string;
   email: string;
   web: string;
+  cuentasBancarias?: string;
+  terminosGarantia?: string;
 }
 
 export interface ProformaItem {

@@ -18,10 +18,13 @@ import {
   FaMobileAlt,
   FaPlug,
   FaHeadphones,
-  FaShieldAlt
+  FaShieldAlt,
+  FaFileExcel,
+  FaFilePdf
 } from 'react-icons/fa';
 import { PackageOpen, Plus } from 'lucide-react';
 import type { InventoryItem } from '../../interfaces/luckyPhoneTypes';
+import { exportarInventarioExcel, exportarInventarioPDF } from '../../utils/inventoryExportUtils';
 
 interface InventoryTableProps {
   items: InventoryItem[];
@@ -109,12 +112,34 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           />
         </div>
 
-        <button
-          onClick={onOpenCreateModal}
-          className="w-full md:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
-        >
-          <FaPlus className="text-xs" /> Agregar Producto al Inventario
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <button
+            type="button"
+            onClick={() => exportarInventarioExcel(items, selectedCategory)}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+            title="Exportar registros filtrados a hoja de cálculo Excel (.csv / .xlsx)"
+          >
+            <FaFileExcel className="text-emerald-600 text-sm" />
+            <span>Exportar Excel</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => exportarInventarioPDF(items, selectedCategory)}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+            title="Exportar reporte documental estructurado a PDF"
+          >
+            <FaFilePdf className="text-rose-600 text-sm" />
+            <span>Exportar PDF</span>
+          </button>
+
+          <button
+            onClick={onOpenCreateModal}
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer ml-auto md:ml-0"
+          >
+            <FaPlus className="text-xs" /> Agregar Producto
+          </button>
+        </div>
       </div>
 
       {/* BARRA DE FILTRADO RÁPIDO REFACTORIZADA (MODERNA Y MINIMALISTA) */}

@@ -19,6 +19,22 @@ export const ProformaPreviewA4: React.FC<ProformaPreviewA4Props> = ({
 }) => {
   const isCelular = data.categoria === 'Celulares';
 
+  const [companyInfo] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('luckyphone_empresa_config');
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return {
+      nombre: 'LUCKYPHONE',
+      ruc: '20609876543',
+      direccion: 'Av. Tecnología 1024, Tienda 15 - Lima, Perú',
+      telefono: '+51 912 345 678',
+      terminosGarantia: ''
+    };
+  });
+
   return (
     <div className="lg:col-span-7 flex flex-col items-center w-full">
       {/* 🌟 1. ÁREA DE IMPRESIÓN AISLADA (id="proforma-a4-printable") */}
@@ -27,7 +43,7 @@ export const ProformaPreviewA4: React.FC<ProformaPreviewA4Props> = ({
         className="w-full bg-white p-6 sm:p-8 shadow-xl rounded-2xl border border-slate-200 text-slate-800 text-xs flex flex-col justify-between print:shadow-none print:border-none print:p-0 print:m-0 font-sans"
       >
         <div>
-          {/* 🌟 4. ENCABEZADO EDITORIAL DE ALTO NIVEL (Sin S.A.C. + mb-6 + Línea 1px) */}
+          {/* 🌟 4. ENCABEZADO EDITORIAL DE ALTO NIVEL DINÁMICO */}
           <div className="flex justify-between items-start pb-4 mb-6 border-b border-slate-200">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -35,11 +51,15 @@ export const ProformaPreviewA4: React.FC<ProformaPreviewA4Props> = ({
                   📱
                 </div>
                 <span className="font-extrabold text-lg tracking-tight text-slate-900">
-                  LUCKY<span className="text-purple-600">PHONE</span>
+                  {companyInfo.nombre.toUpperCase().includes('LUCKY') ? (
+                    <>LUCKY<span className="text-purple-600">PHONE</span></>
+                  ) : (
+                    companyInfo.nombre
+                  )}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">RUC: 20609876543 • Venta de Celulares & Servicio Técnico</p>
-              <p className="text-[11px] text-slate-500 font-medium">Av. Tecnología 1024, Tienda 15 - Lima, Perú</p>
+              <p className="text-[11px] text-slate-500 font-medium">RUC: {companyInfo.ruc} • Venta de Celulares & Servicio Técnico</p>
+              <p className="text-[11px] text-slate-500 font-medium">{companyInfo.direccion} • Tel: {companyInfo.telefono}</p>
             </div>
             <div className="text-right">
               <div className="inline-block bg-purple-50 text-purple-700 px-3.5 py-1.5 rounded-xl border border-purple-200 font-mono font-black text-xs">
@@ -173,9 +193,12 @@ export const ProformaPreviewA4: React.FC<ProformaPreviewA4Props> = ({
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed font-sans">
-              {isCelular
-                ? `Cubre defectos de fabricación de hardware por un periodo de ${data.duracionGarantia}. Es requisito indispensable presentar este documento con IMEI/Serie coincidente.`
-                : `Cubre defectos de fabricación por un periodo de ${data.duracionGarantia}. Es requisito indispensable presentar este documento junto con la caja original del producto para verificar el Número de Serie coincidente.`
+              {companyInfo.terminosGarantia && companyInfo.terminosGarantia.trim()
+                ? companyInfo.terminosGarantia
+                : (isCelular
+                  ? `Cubre defectos de fabricación de hardware por un periodo de ${data.duracionGarantia}. Es requisito indispensable presentar este documento con IMEI/Serie coincidente.`
+                  : `Cubre defectos de fabricación por un periodo de ${data.duracionGarantia}. Es requisito indispensable presentar este documento junto con la caja original del producto para verificar el Número de Serie coincidente.`
+                )
               }
             </p>
           </div>
