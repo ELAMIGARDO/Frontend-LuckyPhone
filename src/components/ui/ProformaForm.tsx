@@ -15,6 +15,10 @@ interface CatalogItem {
   nombre: string;
   categoria: string;
   precio: number;
+  imei1?: string;
+  imei2?: string;
+  numeroSerie?: string;
+  bateria?: string;
 }
 
 interface ProformaFormProps {
@@ -42,11 +46,40 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
     getProductosAdminListaCompletaService()
       .then((productos) => {
         if (productos && productos.length > 0) {
-          const mapped = productos.map(p => ({
-            nombre: p.nombre,
-            categoria: p.categoriaNombre || 'Celulares',
-            precio: p.precio
-          }));
+          const mapped: CatalogItem[] = [];
+          productos.forEach(p => {
+            const cat = p.categoriaNombre || 'Celulares';
+            if (cat === 'Celulares' && p.itemsCelulares && p.itemsCelulares.length > 0) {
+              // Desglosar cada unidad física disponible para permitir seleccionar su IMEI
+              const disponibles = p.itemsCelulares.filter(i => i.estadoDispositivo === 'Disponible');
+              if (disponibles.length > 0) {
+                disponibles.forEach(item => {
+                  mapped.push({
+                    nombre: `${p.nombre} (IMEI: ${item.imei1}${item.bateria ? ` • Batería ${item.bateria}` : ''})`,
+                    categoria: 'Celulares',
+                    precio: p.precio,
+                    imei1: item.imei1,
+                    imei2: item.imei2 || '',
+                    numeroSerie: item.numeroSerial || '',
+                    bateria: item.bateria
+                  });
+                });
+              } else {
+                mapped.push({
+                  nombre: p.nombre,
+                  categoria: cat,
+                  precio: p.precio
+                });
+              }
+            } else {
+              mapped.push({
+                nombre: p.nombre,
+                categoria: cat,
+                precio: p.precio,
+                numeroSerie: p.numeroSerial
+              });
+            }
+          });
           setDbProducts(mapped);
         }
       })
@@ -56,10 +89,10 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
   }, []);
 
   const catalogSuggestions: CatalogItem[] = dbProducts.length > 0 ? dbProducts : [
-    { nombre: 'Apple iPhone 15 Pro Max 256GB - Titanium Natural', categoria: 'Celulares', precio: 4899 },
-    { nombre: 'Samsung Galaxy S24 Ultra 512GB - Titanium Black', categoria: 'Celulares', precio: 4599 },
-    { nombre: 'Cargador Rápido Anker 65W USB-C Dual Port', categoria: 'Cargadores', precio: 189 },
-    { nombre: 'Audífonos Inalámbricos Apple AirPods Pro 2da Gen', categoria: 'Audífonos', precio: 899 },
+    { nombre: 'Apple iPhone 15 Pro Max 256GB - Titanium Natural (IMEI: 358921094857102 • 100%)', categoria: 'Celulares', precio: 4899, imei1: '358921094857102', imei2: '358921094857103', numeroSerie: 'F2LQX980P0DX' },
+    { nombre: 'Samsung Galaxy S24 Ultra 512GB - Titanium Black (IMEI: 359102948571029 • 100%)', categoria: 'Celulares', precio: 4599, imei1: '359102948571029', numeroSerie: 'R5CW901X88K' },
+    { nombre: 'Cargador Rápido Anker 65W USB-C Dual Port', categoria: 'Cargadores', precio: 189, numeroSerie: 'ANK-90182746' },
+    { nombre: 'Audífonos Inalámbricos Apple AirPods Pro 2da Gen', categoria: 'Audífonos', precio: 899, numeroSerie: 'GX9012837461' },
     { nombre: 'Cable USB-C a Lightning Carga Rápida 2m', categoria: 'Accesorios', precio: 79 }
   ];
 
@@ -73,17 +106,22 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
 
   // 🚀 FUNCIÓN UNIFICADA DE SELECCIÓN DE PRODUCTO (onSelectProducto)
   const handleSelectProduct = (item: CatalogItem) => {
-    // 1. Cambiar Categoría Automáticamente (Dispara condicionales de IMEI 1/2 vs Serie)
+    // 1. Cambiar Categoría Automáticamente
     onChange('categoria', item.categoria);
     
     // 2. Cargar Nombre del Modelo y Precio Base del Inventario
     onChange('productoModelo', item.nombre);
     onChange('precioBase', item.precio);
 
-    // 3. Limpieza preventiva de identificadores para el nuevo tipo de producto
-    if (item.categoria !== 'Celulares') {
+    // 3. Autocompletar identificadores físicos si están disponibles en la unidad
+    if (item.categoria === 'Celulares') {
+      if (item.imei1) onChange('imei1', item.imei1);
+      if (item.imei2) onChange('imei2', item.imei2);
+      if (item.numeroSerie) onChange('numeroSerie', item.numeroSerie);
+    } else {
       onChange('imei1', '');
       onChange('imei2', '');
+      if (item.numeroSerie) onChange('numeroSerie', item.numeroSerie);
     }
 
     // 4. Cerrar menú desplegable y resetear término de búsqueda

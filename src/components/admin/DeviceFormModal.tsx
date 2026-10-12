@@ -329,14 +329,24 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-slate-700 mb-1 font-bold">Stock Disponibles (Unidades)</label>
+              <label className="block text-slate-700 mb-1 font-bold">
+                {isCelularCategory ? 'Stock Calculado (Unidades Disponibles)' : 'Stock Físico (Unidades) *'}
+              </label>
               <input
                 type="number"
-                min="1"
+                min="0"
+                disabled={isCelularCategory && !!editingId}
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-bold bg-white"
+                className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-bold ${
+                  isCelularCategory && !!editingId ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'
+                }`}
               />
+              {isCelularCategory && (
+                <p className="text-[10px] text-purple-700 font-semibold mt-1">
+                  💡 Para celulares, el stock se calcula según las unidades con IMEI en estado "Disponible".
+                </p>
+              )}
             </div>
           </div>
 
