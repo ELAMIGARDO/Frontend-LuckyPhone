@@ -41,6 +41,7 @@ export const WarrantiesTable: React.FC<WarrantiesTableProps> = () => {
     handleOpenAnularModal,
     ejecutarAnulacion,
     handleRestaurar,
+    handlePagarProforma,
     handleOpenEditModal,
     handleUpdateGarantia,
     handleReimprimirProforma
@@ -100,6 +101,7 @@ export const WarrantiesTable: React.FC<WarrantiesTableProps> = () => {
                   loading={loading}
                   onAnular={handleOpenAnularModal}
                   onRestaurar={handleRestaurar}
+                  onPagar={handlePagarProforma}
                   onEdit={handleOpenEditModal}
                   onReimprimir={handleReimprimirProforma}
                 />

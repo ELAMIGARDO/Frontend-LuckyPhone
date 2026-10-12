@@ -79,27 +79,36 @@ export const AdminDashboardPage: React.FC = () => {
     try {
       const productosBD = await getProductosAdminListaCompletaService();
       if (productosBD && Array.isArray(productosBD)) {
-        const adaptados: InventoryItem[] = productosBD.map((item: any) => ({
-          id: String(item.id),
-          modelo: item.modelo || item.nombre || 'Producto',
-          marca: item.marca || 'Apple',
-          almacenamiento: item.almacenamiento || '256GB',
-          ram: item.ram || '8GB',
-          color: item.color || 'Estándar',
-          precio: item.precio || 0,
-          stock: item.stock || 1,
-          imei: item.imei1 || '',
-          imei1: item.imei1 || '',
-          imei2: item.imei2 || '',
-          numeroSerie: item.numeroSerial || '',
-          numeroSerial: item.numeroSerial || '',
-          categoriaNombre: item.categoriaNombre || 'Celulares',
-          estado: item.estado || 'Nuevo / Sellado',
-          bateria: item.bateria || '100%',
-          imagenUrl: item.imagenUrl || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80',
-          descripcion: item.descripcion || '',
-          activo: item.activo !== undefined ? item.activo : true
-        }));
+        const adaptados: InventoryItem[] = productosBD.map((item: any) => {
+          const firstItem = item.itemsCelulares && item.itemsCelulares[0];
+          const imei1Val = item.imei1 || (firstItem ? firstItem.imei1 : '');
+          const imei2Val = item.imei2 || (firstItem ? firstItem.imei2 : '');
+          const snVal = item.numeroSerial || (firstItem ? firstItem.numeroSerial : '');
+          const batVal = item.bateria || (firstItem ? firstItem.bateria : '100%');
+
+          return {
+            id: String(item.id),
+            modelo: item.modelo || item.nombre || 'Producto',
+            marca: item.marca || 'Apple',
+            almacenamiento: item.almacenamiento || '256GB',
+            ram: item.ram || '8GB',
+            color: item.color || 'Estándar',
+            precio: item.precio || 0,
+            stock: item.stock !== undefined ? item.stock : 1,
+            imei: imei1Val,
+            imei1: imei1Val,
+            imei2: imei2Val,
+            numeroSerie: snVal,
+            numeroSerial: snVal,
+            categoriaNombre: item.categoriaNombre || 'Celulares',
+            estado: item.estado || 'Nuevo / Sellado',
+            bateria: batVal,
+            imagenUrl: item.imagenUrl || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80',
+            descripcion: item.descripcion || '',
+            activo: item.activo !== undefined ? item.activo : true,
+            itemsCelulares: item.itemsCelulares || []
+          };
+        });
         setInventory(adaptados);
       }
     } catch (e) {
@@ -158,6 +167,16 @@ export const AdminDashboardPage: React.FC = () => {
 
   const handleOpenEditModal = (item: InventoryItem) => {
     setEditingId(item.id);
+    const existingItems = (item.itemsCelulares && item.itemsCelulares.length > 0)
+      ? item.itemsCelulares
+      : (item.imei || item.imei1 ? [{
+          imei1: item.imei || item.imei1 || '',
+          imei2: item.imei2 || '',
+          numeroSerial: item.numeroSerie || item.numeroSerial || '',
+          bateria: item.bateria || '100%',
+          estadoDispositivo: 'Disponible' as const
+        }] : []);
+
     setFormData({
       modelo: item.modelo,
       marca: item.marca || 'Apple',
@@ -174,7 +193,8 @@ export const AdminDashboardPage: React.FC = () => {
       bateria: item.bateria || '100%',
       imagenUrl: item.imagenUrl || '',
       descripcion: item.descripcion || '',
-      activo: item.activo !== undefined ? item.activo : true
+      activo: item.activo !== undefined ? item.activo : true,
+      itemsCelulares: existingItems
     });
     setIsModalOpen(true);
   };
@@ -268,12 +288,35 @@ export const AdminDashboardPage: React.FC = () => {
     const finalImageUrl = formData.imagenUrl || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80';
     const targetCategoriaId = getCategoriaIdByName(formData.categoriaNombre);
 
+    const itemsPayload = isCelular ? (
+      (formData.itemsCelulares && formData.itemsCelulares.length > 0)
+        ? formData.itemsCelulares.map(item => ({
+            id: item.id,
+            imei1: item.imei1,
+            imei2: item.imei2,
+            numeroSerial: item.numeroSerial,
+            bateria: item.bateria || formData.bateria || '100%',
+            estadoDispositivo: item.estadoDispositivo || 'Disponible'
+          }))
+        : [{
+            imei1: formData.imei,
+            imei2: formData.imei2,
+            numeroSerial: formData.numeroSerie,
+            bateria: formData.bateria || '100%',
+            estadoDispositivo: 'Disponible' as const
+          }]
+    ) : undefined;
+
+    const calculatedStock = isCelular && itemsPayload
+      ? itemsPayload.filter(i => i.estadoDispositivo === 'Disponible').length
+      : (parseInt(formData.stock) || 1);
+
     const productDataToSync = {
       id: finalId,
       nombre: `${formData.marca} ${formData.modelo}`,
       descripcion: formData.descripcion || `${formData.modelo} ${formData.almacenamiento}`,
       precio: parseFloat(formData.precio),
-      stock: parseInt(formData.stock) || 1,
+      stock: calculatedStock,
       marca: formData.marca,
       modelo: formData.modelo,
       almacenamiento: formData.almacenamiento,
@@ -288,6 +331,7 @@ export const AdminDashboardPage: React.FC = () => {
       numeroSerial: isCelular ? formData.numeroSerie : undefined,
       imei: isCelular ? formData.imei : undefined,
       imei1: isCelular ? formData.imei : undefined,
+      itemsCelulares: itemsPayload,
       activo: formData.activo
     };
 

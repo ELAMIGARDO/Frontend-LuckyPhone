@@ -8,6 +8,7 @@ interface WarrantyTableRowProps {
   loading: boolean;
   onAnular: (item: Garantia) => void;
   onRestaurar: (id: string) => void;
+  onPagar: (id: string) => void;
   onEdit: (item: Garantia) => void;
   onReimprimir: (item: Garantia) => void;
 }
@@ -18,6 +19,7 @@ export const WarrantyTableRow: React.FC<WarrantyTableRowProps> = ({
   loading,
   onAnular,
   onRestaurar,
+  onPagar,
   onEdit,
   onReimprimir
 }) => {
@@ -116,9 +118,10 @@ export const WarrantyTableRow: React.FC<WarrantyTableRowProps> = ({
           <div className="flex items-center justify-center gap-1.5 flex-wrap">
             {w.estadoPago !== 'PAGADO' && (
               <button
-                onClick={() => onEdit(w)} // Will trigger payment action if called or dedicated
-                className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-sm"
-                title="Cobrar Proforma"
+                onClick={() => onPagar(w.id)}
+                disabled={loading}
+                className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-sm disabled:opacity-50"
+                title="Cobrar Proforma y Confirmar Venta"
               >
                 💵 Cobrar
               </button>

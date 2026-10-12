@@ -299,65 +299,101 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     {/* Fila Expandible */}
                     {isExpanded && (
                       <tr className="bg-purple-50/40 border-b border-purple-100">
-                        <td colSpan={8} className="p-4 pl-12">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-purple-100 shadow-2xs">
-                            {/* IMEI 1 */}
-                            <div className="flex items-start gap-2.5">
-                              <div className="p-2 rounded-lg bg-purple-100 text-purple-700 mt-0.5">
-                                <FaBarcode className="text-xs" />
-                              </div>
-                              <div>
-                                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                  IMEI Principal (1)
-                                </span>
-                                <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
-                                  {item.imei || item.imei1 || 'N/A (No aplica)'}
-                                </p>
+                        <td colSpan={8} className="p-4 pl-12 space-y-3">
+                          {/* Si tiene unidades celulares registradas */}
+                          {item.itemsCelulares && item.itemsCelulares.length > 0 ? (
+                            <div className="space-y-2">
+                              <span className="text-[11px] font-extrabold uppercase text-purple-900 tracking-wider">
+                                Unidades Físicas Registradas ({item.itemsCelulares.length})
+                              </span>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {item.itemsCelulares.map((unit, uIdx) => (
+                                  <div
+                                    key={uIdx}
+                                    className="bg-white p-3 rounded-xl border border-purple-100 shadow-2xs space-y-1.5"
+                                  >
+                                    <div className="flex items-center justify-between text-xs">
+                                      <span className="font-bold text-slate-800">Unidad #{uIdx + 1}</span>
+                                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                        unit.estadoDispositivo === 'Vendido'
+                                          ? 'bg-rose-100 text-rose-700'
+                                          : unit.estadoDispositivo === 'Reservado'
+                                          ? 'bg-amber-100 text-amber-700'
+                                          : 'bg-emerald-100 text-emerald-700'
+                                      }`}>
+                                        {unit.estadoDispositivo || 'Disponible'}
+                                      </span>
+                                    </div>
+                                    <div className="text-[11px] font-mono text-slate-700 space-y-0.5">
+                                      <p><strong className="text-slate-400 font-sans">IMEI 1:</strong> {unit.imei1}</p>
+                                      {unit.imei2 && <p><strong className="text-slate-400 font-sans">IMEI 2:</strong> {unit.imei2}</p>}
+                                      {unit.numeroSerial && <p><strong className="text-slate-400 font-sans">SN:</strong> {unit.numeroSerial}</p>}
+                                      {unit.bateria && <p><strong className="text-slate-400 font-sans">Batería:</strong> {unit.bateria}</p>}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-purple-100 shadow-2xs">
+                              {/* IMEI 1 */}
+                              <div className="flex items-start gap-2.5">
+                                <div className="p-2 rounded-lg bg-purple-100 text-purple-700 mt-0.5">
+                                  <FaBarcode className="text-xs" />
+                                </div>
+                                <div>
+                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
+                                    IMEI Principal (1)
+                                  </span>
+                                  <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
+                                    {item.imei || item.imei1 || 'N/A (No aplica)'}
+                                  </p>
+                                </div>
+                              </div>
 
-                            {/* IMEI 2 */}
-                            <div className="flex items-start gap-2.5">
-                              <div className="p-2 rounded-lg bg-blue-100 text-blue-700 mt-0.5">
-                                <FaFingerprint className="text-xs" />
+                              {/* IMEI 2 */}
+                              <div className="flex items-start gap-2.5">
+                                <div className="p-2 rounded-lg bg-blue-100 text-blue-700 mt-0.5">
+                                  <FaFingerprint className="text-xs" />
+                                </div>
+                                <div>
+                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
+                                    IMEI Secundario (2)
+                                  </span>
+                                  <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
+                                    {item.imei2 || 'N/A (No aplica)'}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                  IMEI Secundario (2)
-                                </span>
-                                <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
-                                  {item.imei2 || 'N/A (No aplica)'}
-                                </p>
-                              </div>
-                            </div>
 
-                            {/* Número de Serie */}
-                            <div className="flex items-start gap-2.5">
-                              <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 mt-0.5">
-                                <FaHashtag className="text-xs" />
+                              {/* Número de Serie */}
+                              <div className="flex items-start gap-2.5">
+                                <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 mt-0.5">
+                                  <FaHashtag className="text-xs" />
+                                </div>
+                                <div>
+                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
+                                    N° de Serie (SN)
+                                  </span>
+                                  <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
+                                    {item.numeroSerie || item.numeroSerial || 'N/A (No aplica)'}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                  N° de Serie (SN)
-                                </span>
-                                <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
-                                  {item.numeroSerie || item.numeroSerial || 'N/A (No aplica)'}
-                                </p>
-                              </div>
-                            </div>
 
-                            {/* Descripción */}
-                            <div className="flex items-start gap-2.5 sm:col-span-2 md:col-span-1">
-                              <div>
-                                <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                  Descripción / Notas
-                                </span>
-                                <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">
-                                  {item.descripcion || 'Sin descripción adicional.'}
-                                </p>
+                              {/* Descripción */}
+                              <div className="flex items-start gap-2.5 sm:col-span-2 md:col-span-1">
+                                <div>
+                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
+                                    Descripción / Notas
+                                  </span>
+                                  <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">
+                                    {item.descripcion || 'Sin descripción adicional.'}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          )}
                         </td>
                       </tr>
                     )}
