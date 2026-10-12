@@ -20,6 +20,7 @@ import {
   FaHeadphones,
   FaShieldAlt
 } from 'react-icons/fa';
+import { PackageOpen, Plus } from 'lucide-react';
 import type { InventoryItem } from '../../interfaces/luckyPhoneTypes';
 
 interface InventoryTableProps {
@@ -69,6 +70,29 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     const itemCat = item.categoriaNombre || 'Celulares';
     return itemCat.toLowerCase().includes(selectedCategory.toLowerCase());
   });
+
+  if (items.length === 0 && !searchTerm) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[440px] bg-white rounded-3xl border border-dashed border-slate-200 p-8 sm:p-12 text-center shadow-xs">
+        <div className="p-5 bg-purple-50 rounded-3xl text-purple-600 mb-5 animate-pulse border border-purple-100 shadow-inner">
+          <PackageOpen size={48} className="stroke-[1.6]" />
+        </div>
+        <h3 className="text-xl font-black text-slate-900 mb-2">
+          ¡Tu inventario está listo para empezar!
+        </h3>
+        <p className="text-slate-500 max-w-md mb-6 text-xs sm:text-sm font-medium leading-relaxed">
+          Actualmente no cuentas con equipos registrados bajo el nuevo modelo relacional de IMEIs y hardware físico.
+        </p>
+        <button
+          onClick={onOpenCreateModal}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-lg shadow-purple-500/25 transition-all active:scale-95 cursor-pointer"
+        >
+          <Plus size={18} />
+          + Registrar Primer Celular
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden w-full transition-all">

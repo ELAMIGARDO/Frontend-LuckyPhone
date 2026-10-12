@@ -7,13 +7,15 @@ import { AnularWarningModal } from './warranties/AnularWarningModal';
 import { EditWarrantyModal } from './warranties/EditWarrantyModal';
 import { ProformaPreviewA4 } from '../ui/ProformaPreviewA4';
 
+import { ShieldAlert, Plus } from 'lucide-react';
 export type { Garantia } from './warranties/useWarranties';
 
 interface WarrantiesTableProps {
   inventory?: InventoryItem[];
+  onNavigateProforma?: () => void;
 }
 
-export const WarrantiesTable: React.FC<WarrantiesTableProps> = () => {
+export const WarrantiesTable: React.FC<WarrantiesTableProps> = ({ onNavigateProforma }) => {
   const {
     searchTerm,
     setSearchTerm,
@@ -67,33 +69,54 @@ export const WarrantiesTable: React.FC<WarrantiesTableProps> = () => {
         countAnulados={countAnulados}
       />
 
-      {/* TABLA DE CONTENIDO */}
-      <div className="w-full overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[850px]">
-          <thead className="bg-slate-900 text-slate-200 font-extrabold uppercase text-[11px] tracking-wider select-none">
-            <tr>
-              <th className="py-3 px-4">ID Control</th>
-              <th className="py-3 px-4">Cliente / DNI</th>
-              <th className="py-3 px-4">Producto / Categoría</th>
-              <th className="py-3 px-4">IMEI / Serie</th>
-              <th className="py-3 px-4">Cobertura</th>
-              <th className="py-3 px-4">Activación</th>
-              <th className="py-3 px-4">Vencimiento</th>
-              <th className="py-3 px-4 text-center">Estado Legal</th>
-              <th className="py-3 px-4 text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-xs font-semibold">
-            {listadoFiltrado.length === 0 ? (
+      {/* TABLA DE CONTENIDO O EMPTY STATE */}
+      {listadoFiltrado.length === 0 ? (
+        <div className="flex flex-col items-center justify-center min-h-[380px] p-8 sm:p-12 text-center bg-white border-t border-slate-100">
+          <div className="p-4 bg-purple-50 rounded-3xl text-purple-600 mb-4 animate-pulse border border-purple-100 shadow-inner">
+            <ShieldAlert size={44} className="stroke-[1.6]" />
+          </div>
+          <h3 className="text-xl font-black text-slate-900 mb-2">
+            {isAnulados
+              ? 'La papelera de reciclaje está vacía'
+              : searchTerm
+              ? `Sin resultados para "${searchTerm}"`
+              : 'Aún no hay garantías registradas'}
+          </h3>
+          <p className="text-slate-500 max-w-sm mb-6 text-xs sm:text-sm font-medium leading-relaxed">
+            {isAnulados
+              ? 'No tienes pólizas anuladas en este momento. Las pólizas anuladas se conservan aquí.'
+              : searchTerm
+              ? 'Prueba modificando los términos de búsqueda, limpiando los filtros o cambiando de pestaña.'
+              : 'Emite tu primera proforma comercial para activar la póliza y protección legal del hardware.'}
+          </p>
+          {onNavigateProforma && !isAnulados && (
+            <button
+              onClick={onNavigateProforma}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-purple-500/25 transition-all active:scale-95 cursor-pointer"
+            >
+              <Plus size={18} />
+              + Emitir Nueva Proforma
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="w-full overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[850px]">
+            <thead className="bg-slate-900 text-slate-200 font-extrabold uppercase text-[11px] tracking-wider select-none">
               <tr>
-                <td colSpan={9} className="py-10 text-center text-slate-400 font-medium">
-                  {isAnulados
-                    ? 'No hay registros en la papelera de reciclaje.'
-                    : 'No se encontraron garantías que coincidan con los filtros seleccionados.'}
-                </td>
+                <th className="py-3 px-4">ID Control</th>
+                <th className="py-3 px-4">Cliente / DNI</th>
+                <th className="py-3 px-4">Producto / Categoría</th>
+                <th className="py-3 px-4">IMEI / Serie</th>
+                <th className="py-3 px-4">Cobertura</th>
+                <th className="py-3 px-4">Activación</th>
+                <th className="py-3 px-4">Vencimiento</th>
+                <th className="py-3 px-4 text-center">Estado Legal</th>
+                <th className="py-3 px-4 text-center">Acciones</th>
               </tr>
-            ) : (
-              listadoFiltrado.map((garantia) => (
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs font-semibold">
+              {listadoFiltrado.map((garantia) => (
                 <WarrantyTableRow
                   key={garantia.id}
                   garantia={garantia}
@@ -105,11 +128,11 @@ export const WarrantiesTable: React.FC<WarrantiesTableProps> = () => {
                   onEdit={handleOpenEditModal}
                   onReimprimir={handleReimprimirProforma}
                 />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* 🖨️ CONTENEDOR OCULTO DE REIMPRESIÓN PROFORMA A4 */}
       {printGarantia && (

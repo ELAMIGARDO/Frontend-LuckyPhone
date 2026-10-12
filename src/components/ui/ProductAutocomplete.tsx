@@ -120,22 +120,33 @@ export const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({ onSele
         </div>
       </div>
 
-      {showDropdown && (searchTerm || filterCategory !== 'todas') && filteredCatalog.length > 0 && (
-        <div className="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl overflow-y-auto max-h-60">
-          {filteredCatalog.map((item, idx) => (
-            <button
-              type="button"
-              key={idx}
-              onClick={() => handleItemClick(item)}
-              className="w-full text-left px-3.5 py-2.5 hover:bg-purple-50 transition-colors border-b border-slate-100 last:border-none flex justify-between items-center text-xs cursor-pointer"
-            >
-              <div>
-                <p className="font-bold text-slate-900">{item.nombre}</p>
-                <span className="text-[10px] text-purple-600 font-bold">{item.categoria}</span>
-              </div>
-              <span className="font-mono font-extrabold text-slate-800">S/ {item.precio}</span>
-            </button>
-          ))}
+      {showDropdown && (searchTerm || filterCategory !== 'todas') && (
+        <div className="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden max-h-64">
+          {filteredCatalog.length > 0 ? (
+            <div className="overflow-y-auto max-h-60">
+              {filteredCatalog.map((item, idx) => (
+                <button
+                  type="button"
+                  key={idx}
+                  onClick={() => handleItemClick(item)}
+                  className="w-full text-left px-3.5 py-2.5 hover:bg-purple-50 transition-colors border-b border-slate-100 last:border-none flex justify-between items-center text-xs cursor-pointer"
+                >
+                  <div>
+                    <p className="font-bold text-slate-900">{item.nombre}</p>
+                    <span className="text-[10px] text-purple-600 font-bold">{item.categoria}</span>
+                  </div>
+                  <span className="font-mono font-extrabold text-slate-800">S/ {item.precio}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 text-center">
+              <p className="text-xs font-bold text-slate-700">No se encontraron productos disponibles</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Verifica que el producto esté registrado y tenga unidades con IMEI en estado "Disponible".
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -450,7 +450,12 @@ export const AdminDashboardPage: React.FC = () => {
 
           {activeTab === 'proforma' && <ProformaDocument />}
 
-          {activeTab === 'warranties' && <WarrantiesTable inventory={inventory} />}
+          {activeTab === 'warranties' && (
+            <WarrantiesTable
+              inventory={inventory}
+              onNavigateProforma={() => setActiveTab('proforma')}
+            />
+          )}
 
           {activeTab === 'reviews' && <CustomerReviews />}
         </main>
