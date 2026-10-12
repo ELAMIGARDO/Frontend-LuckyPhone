@@ -1,25 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import {
-  FaPrint,
-  FaFileInvoiceDollar,
-  FaUser,
-  FaTag,
-  FaUserCheck,
-  FaBarcode,
-  FaSearch
-} from 'react-icons/fa';
-import type { ProformaData } from './ProformaDocument';
-import { getProductosAdminListaCompletaService } from '../../services/backendService';
-
-interface CatalogItem {
-  nombre: string;
-  categoria: string;
-  precio: number;
-  imei1?: string;
-  imei2?: string;
-  numeroSerie?: string;
-  bateria?: string;
-}
+import React from 'react';
+import { FaUser, FaTag, FaUserCheck, FaBarcode, FaPrint, FaFileInvoiceDollar } from 'react-icons/fa';
+import type { ProformaData } from './useProforma';
+import { ProductAutocomplete } from './ProductAutocomplete';
+import type { CatalogItem } from './ProductAutocomplete';
 
 interface ProformaFormProps {
   data: ProformaData;
@@ -37,83 +20,13 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
   onSubmit
 }) => {
   const isCelular = data.categoria === 'Celulares';
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [dbProducts, setDbProducts] = useState<CatalogItem[]>([]);
+  const opcionesGarantia = ['0 Meses', '3 Meses', '6 Meses', '12 Meses', '24 Meses'];
 
-  // 🔄 Cargar productos reales desde la Base de Datos / Backend
-  useEffect(() => {
-    getProductosAdminListaCompletaService()
-      .then((productos) => {
-        if (productos && productos.length > 0) {
-          const mapped: CatalogItem[] = [];
-          productos.forEach(p => {
-            const cat = p.categoriaNombre || 'Celulares';
-            if (cat === 'Celulares' && p.itemsCelulares && p.itemsCelulares.length > 0) {
-              // Desglosar cada unidad física disponible para permitir seleccionar su IMEI
-              const disponibles = p.itemsCelulares.filter(i => i.estadoDispositivo === 'Disponible');
-              if (disponibles.length > 0) {
-                disponibles.forEach(item => {
-                  mapped.push({
-                    nombre: `${p.nombre} (IMEI: ${item.imei1}${item.bateria ? ` • Batería ${item.bateria}` : ''})`,
-                    categoria: 'Celulares',
-                    precio: p.precio,
-                    imei1: item.imei1,
-                    imei2: item.imei2 || '',
-                    numeroSerie: item.numeroSerial || '',
-                    bateria: item.bateria
-                  });
-                });
-              } else {
-                mapped.push({
-                  nombre: p.nombre,
-                  categoria: cat,
-                  precio: p.precio
-                });
-              }
-            } else {
-              mapped.push({
-                nombre: p.nombre,
-                categoria: cat,
-                precio: p.precio,
-                numeroSerie: p.numeroSerial
-              });
-            }
-          });
-          setDbProducts(mapped);
-        }
-      })
-      .catch(() => {
-        // En caso de estar offline, el servicio automáticamente rescata de localStorage
-      });
-  }, []);
-
-  const catalogSuggestions: CatalogItem[] = dbProducts.length > 0 ? dbProducts : [
-    { nombre: 'Apple iPhone 15 Pro Max 256GB - Titanium Natural (IMEI: 358921094857102 • 100%)', categoria: 'Celulares', precio: 4899, imei1: '358921094857102', imei2: '358921094857103', numeroSerie: 'F2LQX980P0DX' },
-    { nombre: 'Samsung Galaxy S24 Ultra 512GB - Titanium Black (IMEI: 359102948571029 • 100%)', categoria: 'Celulares', precio: 4599, imei1: '359102948571029', numeroSerie: 'R5CW901X88K' },
-    { nombre: 'Cargador Rápido Anker 65W USB-C Dual Port', categoria: 'Cargadores', precio: 189, numeroSerie: 'ANK-90182746' },
-    { nombre: 'Audífonos Inalámbricos Apple AirPods Pro 2da Gen', categoria: 'Audífonos', precio: 899, numeroSerie: 'GX9012837461' },
-    { nombre: 'Cable USB-C a Lightning Carga Rápida 2m', categoria: 'Accesorios', precio: 79 }
-  ];
-
-  const [filterCategory, setFilterCategory] = useState<string>('todas');
-
-  const filteredCatalog = catalogSuggestions.filter(item => {
-    const matchesSearch = item.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'todas' || item.categoria.toLowerCase() === filterCategory.toLowerCase();
-    return matchesSearch && matchesCategory;
-  });
-
-  // 🚀 FUNCIÓN UNIFICADA DE SELECCIÓN DE PRODUCTO (onSelectProducto)
   const handleSelectProduct = (item: CatalogItem) => {
-    // 1. Cambiar Categoría Automáticamente
     onChange('categoria', item.categoria);
-    
-    // 2. Cargar Nombre del Modelo y Precio Base del Inventario
     onChange('productoModelo', item.nombre);
     onChange('precioBase', item.precio);
 
-    // 3. Autocompletar identificadores físicos si están disponibles en la unidad
     if (item.categoria === 'Celulares') {
       if (item.imei1) onChange('imei1', item.imei1);
       if (item.imei2) onChange('imei2', item.imei2);
@@ -123,13 +36,7 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
       onChange('imei2', '');
       if (item.numeroSerie) onChange('numeroSerie', item.numeroSerie);
     }
-
-    // 4. Cerrar menú desplegable y resetear término de búsqueda
-    setSearchTerm('');
-    setShowDropdown(false);
   };
-
-  const opcionesGarantia = ['0 Meses', '3 Meses', '6 Meses', '12 Meses', '24 Meses'];
 
   return (
     <form onSubmit={onSubmit} className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5 print:hidden">
@@ -144,63 +51,8 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
         </div>
       </div>
 
-      {/* FILTRO DE CATEGORÍA + BUSCADOR INTELIGENTE DE PRODUCTOS EN INVENTARIO (CONTENEDOR PADRE RELATIVO) */}
-      <div className="relative space-y-2 bg-purple-50/30 p-3 rounded-2xl border border-purple-100">
-        <label className="block text-[11px] font-bold text-purple-800 flex items-center gap-1">
-          <FaTag className="text-[10px]" /> Filtrar & Buscar Producto del Inventario
-        </label>
-        
-        <div className="flex flex-col sm:flex-row gap-2">
-          {/* SELECT DESPLEGABLE DE CATEGORÍA */}
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="w-full sm:w-2/5 px-3 py-2 bg-white rounded-xl border border-purple-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 shadow-sm cursor-pointer"
-          >
-            <option value="todas">Todas las Categorías</option>
-            <option value="Celulares">Celulares</option>
-            <option value="Cargadores">Cargadores</option>
-            <option value="Audífonos">Audífonos</option>
-            <option value="Accesorios">Accesorios</option>
-          </select>
-
-          {/* INPUT BUSCADOR TEXTUAL */}
-          <div className="relative flex-1">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-400 text-[10px]" />
-            <input
-              type="text"
-              value={searchTerm}
-              onFocus={() => setShowDropdown(true)}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setShowDropdown(true);
-              }}
-              placeholder="Escribe para autocompletar producto..."
-              className="w-full pl-8 pr-3.5 py-2 rounded-xl border border-purple-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 bg-white"
-            />
-          </div>
-        </div>
-
-        {/* 🌟 MENÚ DESPLEGABLE FLOTANTE CON SCROLL INTERNO (SIN EMPUJAR EL FORMULARIO INFERIOR) */}
-        {showDropdown && (searchTerm || filterCategory !== 'todas') && filteredCatalog.length > 0 && (
-          <div className="absolute left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl overflow-y-auto max-h-60">
-            {filteredCatalog.map((item, idx) => (
-              <button
-                type="button"
-                key={idx}
-                onClick={() => handleSelectProduct(item)}
-                className="w-full text-left px-3.5 py-2.5 hover:bg-purple-50 transition-colors border-b border-slate-100 last:border-none flex justify-between items-center text-xs cursor-pointer"
-              >
-                <div>
-                  <p className="font-bold text-slate-900">{item.nombre}</p>
-                  <span className="text-[10px] text-purple-600 font-bold">{item.categoria}</span>
-                </div>
-                <span className="font-mono font-extrabold text-slate-800">S/ {item.precio}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* COMPONENTE MODULAR DE BÚSQUEDA Y AUTOCOMPLETADO */}
+      <ProductAutocomplete onSelect={handleSelectProduct} />
 
       {/* DATOS DEL EMISOR / ASESOR */}
       <div className="space-y-3">
@@ -397,59 +249,43 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
                 type="number"
                 value={data.descuentoValor}
                 onChange={(e) => onChange('descuentoValor', Number(e.target.value))}
-                placeholder={data.descuentoTipo === 'soles' ? 'S/ 0' : '0%'}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-rose-600"
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500"
               />
             </div>
           </div>
         </div>
 
-        {/* SELECCIÓN RÁPIDA DE GARANTÍA (TABS) */}
+        {/* TIEMPO DE GARANTÍA */}
         <div>
-          <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
-            Duración de la Garantía
-          </label>
-          <div className="grid grid-cols-5 gap-1 bg-slate-100 p-1 rounded-xl">
-            {opcionesGarantia.map((opcion) => {
-              const active = data.duracionGarantia === opcion;
-              return (
-                <button
-                  type="button"
-                  key={opcion}
-                  onClick={() => onChange('duracionGarantia', opcion)}
-                  className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    active
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                  }`}
-                >
-                  {opcion === '0 Meses' ? '0M (N/A)' : opcion}
-                </button>
-              );
-            })}
+          <label className="block text-[11px] font-bold text-slate-700 mb-1">Cobertura de Garantía</label>
+          <div className="grid grid-cols-5 gap-1.5">
+            {opcionesGarantia.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => onChange('duracionGarantia', opt)}
+                className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer ${
+                  data.duracionGarantia === opt
+                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* BOTONES DE ACCIÓN RÁPIDA */}
-      <div className="pt-4 border-t border-slate-100 flex flex-col gap-2.5">
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Guardando en BD...</span>
-            </>
-          ) : (
-            <>
-              <FaPrint className="text-sm" /> Guardar e Imprimir Proforma / PDF
-            </>
-          )}
-        </button>
-      </div>
+      {/* BOTÓN DE IMPRESIÓN Y GUARDADO */}
+      <button
+        type="submit"
+        disabled={isSaving}
+        className="w-full mt-4 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-md hover:shadow-lg transition-all active:scale-[0.99] cursor-pointer disabled:opacity-50"
+      >
+        <FaPrint />
+        <span>{isSaving ? 'Guardando en Base de Datos...' : 'Guardar y Generar PDF / Imprimir'}</span>
+      </button>
     </form>
   );
 };
