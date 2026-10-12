@@ -113,7 +113,8 @@ export const exportarInventarioPDF = (items: InventoryItem[], categoriaSeleccion
   let tableRowsHtml = '';
 
   if (categoriaSeleccionada === 'Celulares' || categoriaSeleccionada === 'TODOS') {
-    filtered.forEach((p, idx) => {
+    let correlativo = 1;
+    filtered.forEach((p) => {
       const itemsList = p.itemsCelulares && p.itemsCelulares.length > 0 
         ? p.itemsCelulares 
         : [{
@@ -127,7 +128,7 @@ export const exportarInventarioPDF = (items: InventoryItem[], categoriaSeleccion
       itemsList.forEach((it) => {
         tableRowsHtml += `
           <tr>
-            <td style="font-weight: 700; color: #4338ca;">#${p.id}</td>
+            <td style="font-weight: 700; color: #4338ca;">#${correlativo++}</td>
             <td style="font-weight: 600;">${p.modelo}</td>
             <td><span class="badge ${p.estado?.includes('Nuevo') ? 'badge-new' : 'badge-used'}">${p.estado}</span></td>
             <td>${p.color}</td>

@@ -25,9 +25,10 @@ export const CardProduct = ({ producto }: Props) => {
   // Si por alguna razón 'producto' o 'producto.stock' viene vacío, se asigna 0 de forma segura.
   const stockReal = producto?.stock ?? 0;
   const isAgotado = stockReal === 0;
+  const isUltimaUnidad = stockReal === 1;
 
   return (
-    <div className="flex flex-col relative gap-6">
+    <div className={`flex flex-col relative gap-6 transition-opacity duration-300 ${isAgotado ? 'opacity-75' : ''}`}>
       {/* Redirección al detalle usando el ID numérico o string del producto */}
       <Link to={`/celulares/${producto?.id}`} className="flex relative group overflow-hidden bg-gray-50 rounded-2xl">
         <div className="flex h-87.5 w-full items-center justify-center py-4 lg:h-62.5">
@@ -48,7 +49,7 @@ export const CardProduct = ({ producto }: Props) => {
             }`}
         >
           <FiPlus />
-          Añadir
+          {isAgotado ? 'Sin Stock' : 'Añadir'}
         </button>
       </Link>
 
@@ -88,6 +89,13 @@ export const CardProduct = ({ producto }: Props) => {
           S/ {(producto?.precio || 0).toFixed(2)}
         </p>
 
+        {/* Alerta de Última Unidad (FOMO Stock Alert) */}
+        {isUltimaUnidad && (
+          <span className="text-amber-600 font-medium text-xs animate-pulse text-center">
+            ⚠️ ¡Última unidad disponible en tienda!
+          </span>
+        )}
+
         {/* Color del equipo */}
         <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md mt-0.5 font-medium">
           Color: {producto?.color || "Estándar"}
@@ -97,7 +105,7 @@ export const CardProduct = ({ producto }: Props) => {
       {/* Etiqueta de Agotado en la esquina superior */}
       {isAgotado && (
         <div className="absolute top-2 left-2 bg-rose-600 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-sm">
-          Agotado
+          Agotado / Sin Stock
         </div>
       )}
     </div>

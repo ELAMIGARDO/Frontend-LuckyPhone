@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaPlus, FaTrashAlt, FaBarcode } from 'react-icons/fa';
 import type { DeviceFormData } from './DeviceFormModal';
+import { eliminarItemCelularService } from '../../services/backendService';
 
 interface Props {
   formData: DeviceFormData;
@@ -34,9 +35,29 @@ export const DeviceItemCelularList: React.FC<Props> = ({
     });
   };
 
-  const handleRemoveUnit = (index: number) => {
+  const handleRemoveUnit = async (index: number) => {
+    const itemToRemove = currentItems[index];
+
+    // Mutación instantánea y reactiva del estado local
     const updated = currentItems.filter((_, i) => i !== index);
-    setFormData({ ...formData, itemsCelulares: updated });
+    const newImei = updated.length > 0 ? (updated[0].imei1 || '') : '';
+    const newSerial = updated.length > 0 ? (updated[0].numeroSerial || '') : '';
+
+    setFormData(prev => ({
+      ...prev,
+      itemsCelulares: updated,
+      imei: newImei,
+      numeroSerie: newSerial
+    }));
+
+    // Si ya existe persistido en la base de datos MySQL, llamar al servicio para eliminarlo físicamente
+    if (itemToRemove && itemToRemove.id) {
+      try {
+        await eliminarItemCelularService(itemToRemove.id);
+      } catch (error) {
+        console.error("Error al eliminar item celular físico en backend:", error);
+      }
+    }
   };
 
   return (
