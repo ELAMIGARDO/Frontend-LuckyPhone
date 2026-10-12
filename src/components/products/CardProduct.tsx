@@ -53,33 +53,50 @@ export const CardProduct = ({ producto }: Props) => {
       </Link>
 
       <div className="flex flex-col gap-1 items-center">
-        {/* Marca y Nombre */}
-        <span className="text-xs text-gray-400 uppercase font-semibold tracking-wider">
-          {producto?.marca || "Celular"}
-        </span>
-        <p className="text-[15px] font-medium text-center line-clamp-1">
-          {producto?.nombre || "Cargando nombre..."}
+        {/* Marca y Condición Badge */}
+        <div className="flex items-center gap-1.5 flex-wrap justify-center">
+          <span className="text-[11px] text-gray-400 uppercase font-bold tracking-wider">
+            {producto?.marca || "Celular"}
+          </span>
+          {producto?.estado && (
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border shadow-2xs ${
+              producto.estado.toLowerCase().includes('nuevo')
+                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                : producto.estado.toLowerCase().includes('open')
+                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                : producto.estado.toLowerCase().includes('semi') || producto.estado.toLowerCase().includes('usado')
+                ? 'bg-slate-100 text-slate-700 border-slate-300'
+                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            }`}>
+              {producto.estado}
+            </span>
+          )}
+        </div>
+
+        {/* Nombre / Modelo limpio sin duplicar marca */}
+        <p className="text-[15px] font-bold text-slate-900 text-center line-clamp-1">
+          {producto?.modelo || producto?.nombre || "Cargando..."}
         </p>
         
         {/* Especificaciones técnicas rápidas */}
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 font-medium">
           {producto?.almacenamiento || "128GB"} / {producto?.ram || "8GB"} RAM
         </p>
         
         {/* Precio Formateado en Soles */}
-        <p className="text-[16px] font-bold text-blue-600 mt-1">
+        <p className="text-[16px] font-black text-indigo-600 mt-1">
           S/ {(producto?.precio || 0).toFixed(2)}
         </p>
 
         {/* Color del equipo */}
-        <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md mt-1 font-medium">
+        <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md mt-0.5 font-medium">
           Color: {producto?.color || "Estándar"}
         </span>
       </div>
 
       {/* Etiqueta de Agotado en la esquina superior */}
       {isAgotado && (
-        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-md font-bold shadow-sm">
+        <div className="absolute top-2 left-2 bg-rose-600 text-white text-xs px-2.5 py-1 rounded-lg font-bold shadow-sm">
           Agotado
         </div>
       )}

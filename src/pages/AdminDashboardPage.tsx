@@ -311,10 +311,14 @@ export const AdminDashboardPage: React.FC = () => {
       ? itemsPayload.filter(i => i.estadoDispositivo === 'Disponible').length
       : (parseInt(formData.stock) || 1);
 
+    const cleanNombre = formData.modelo.toLowerCase().startsWith(formData.marca.toLowerCase())
+      ? formData.modelo
+      : `${formData.marca} ${formData.modelo}`.trim();
+
     const productDataToSync = {
       id: finalId,
-      nombre: `${formData.marca} ${formData.modelo}`,
-      descripcion: formData.descripcion || `${formData.modelo} ${formData.almacenamiento}`,
+      nombre: cleanNombre,
+      descripcion: formData.descripcion || `${cleanNombre} ${formData.almacenamiento}`,
       precio: parseFloat(formData.precio),
       stock: calculatedStock,
       marca: formData.marca,

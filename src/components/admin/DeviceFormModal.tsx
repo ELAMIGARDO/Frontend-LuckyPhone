@@ -175,7 +175,21 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
                 <label className="block text-purple-950 font-bold mb-1">Condición del Producto *</label>
                 <select
                   value={formData.estado}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                  onChange={(e) => {
+                    const newEstado = e.target.value;
+                    const isNowNuevo = newEstado === 'Nuevo / Sellado';
+                    const updatedItems = (formData.itemsCelulares || []).map(i => ({
+                      ...i,
+                      bateria: isNowNuevo ? '100%' : (i.bateria || '90%')
+                    }));
+
+                    setFormData({
+                      ...formData,
+                      estado: newEstado,
+                      bateria: isNowNuevo ? '100%' : (formData.bateria === '100%' ? '95%' : formData.bateria),
+                      itemsCelulares: updatedItems
+                    });
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-purple-200 focus:outline-none focus:border-purple-600 text-xs font-bold bg-white"
                 >
                   <option value="Nuevo / Sellado">✨ Nuevo / Sellado</option>
@@ -392,19 +406,22 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
 
                         <div>
                           <label className="block text-slate-800 font-bold mb-1 text-[11px]">
-                            Batería (%)
+                            Batería (%) {formData.estado === 'Nuevo / Sellado' && <span className="text-emerald-600 font-sans">(100% Sellado)</span>}
                           </label>
                           <input
                             type="text"
+                            disabled={formData.estado === 'Nuevo / Sellado'}
                             placeholder="100% o 92%"
-                            value={item.bateria || '100%'}
+                            value={formData.estado === 'Nuevo / Sellado' ? '100%' : (item.bateria || '100%')}
                             onChange={(e) => {
                               const val = e.target.value;
                               const updated = [...(formData.itemsCelulares || [])];
                               updated[index] = { ...updated[index], bateria: val };
                               setFormData({ ...formData, itemsCelulares: updated });
                             }}
-                            className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 font-bold text-xs bg-white"
+                            className={`w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 font-bold text-xs ${
+                              formData.estado === 'Nuevo / Sellado' ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white'
+                            }`}
                           />
                         </div>
                       </div>

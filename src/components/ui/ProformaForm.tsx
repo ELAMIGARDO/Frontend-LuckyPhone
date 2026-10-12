@@ -91,33 +91,49 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">DNI / RUC</label>
+            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+              DNI / RUC <span className="text-[10px] text-purple-600 font-normal font-sans">(8 o 11 dígitos)</span>
+            </label>
             <input
               type="text"
               required
+              maxLength={11}
+              placeholder="Ej: 74839201 o 20601234567"
               value={data.clienteDni}
-              onChange={(e) => onChange('clienteDni', e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 font-mono"
+              onChange={(e) => {
+                // Permitir estrictamente solo números y máximo 11 caracteres (DNI: 8, RUC: 11)
+                const numericVal = e.target.value.replace(/\D/g, '').substring(0, 11);
+                onChange('clienteDni', numericVal);
+              }}
+              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 font-mono bg-white"
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Teléfono de Contacto</label>
+            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+              Teléfono de Contacto <span className="text-[10px] text-slate-400 font-normal">(Máx 15 car.)</span>
+            </label>
             <input
               type="text"
+              maxLength={15}
+              placeholder="+51 912345678"
               value={data.clienteTelefono}
-              onChange={(e) => onChange('clienteTelefono', e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500"
+              onChange={(e) => onChange('clienteTelefono', e.target.value.substring(0, 15))}
+              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 bg-white"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-[11px] font-bold text-slate-700 mb-1">Dirección Registrada</label>
+          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+            Dirección Registrada <span className="text-[10px] text-slate-400 font-normal">(Máx 60 caracteres)</span>
+          </label>
           <input
             type="text"
+            maxLength={60}
+            placeholder="Av. Las Camelias 450, San Isidro, Lima"
             value={data.clienteDireccion}
-            onChange={(e) => onChange('clienteDireccion', e.target.value)}
-            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500"
+            onChange={(e) => onChange('clienteDireccion', e.target.value.substring(0, 60))}
+            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 bg-white"
           />
         </div>
       </div>

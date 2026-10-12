@@ -221,11 +221,13 @@ export const useWarranties = () => {
       const response = await luckyphoneApi.delete(`/garantias/${id}`).catch(() => null);
 
       if (!response || response.status === 200 || response.status === 204) {
-        setGarantias(prev =>
-          prev.map(item =>
-            item.id === id ? { ...item, eliminadoAt: new Date().toISOString() } : item
-          )
-        );
+        setGarantias(prev => {
+          const updated = prev.map(item =>
+            item.id === id ? { ...item, eliminadoAt: new Date().toISOString(), estadoPago: 'ANULADO' as const } : item
+          );
+          localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
+          return updated;
+        });
       }
     } finally {
       setLoading(false);
@@ -240,9 +242,11 @@ export const useWarranties = () => {
       const response = await luckyphoneApi.post(`/garantias/${id}/restaurar`).catch(() => null);
 
       if (!response || response.status === 200 || response.status === 201) {
-        setGarantias(prev =>
-          prev.map(item => (item.id === id ? { ...item, eliminadoAt: null } : item))
-        );
+        setGarantias(prev => {
+          const updated = prev.map(item => (item.id === id ? { ...item, eliminadoAt: null, estadoPago: 'PENDIENTE' as const } : item));
+          localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
+          return updated;
+        });
       }
     } finally {
       setLoading(false);
@@ -254,11 +258,14 @@ export const useWarranties = () => {
     try {
       const response = await luckyphoneApi.post(`/garantias/${id}/pagar`).catch(() => null);
       if (!response || response.status === 200 || response.status === 201) {
-        setGarantias(prev =>
-          prev.map(item =>
-            item.id === id ? { ...item, estadoPago: 'PAGADO', activacion: new Date().toLocaleDateString('es-PE') } : item
-          )
-        );
+        setGarantias(prev => {
+          const hoyStr = new Date().toLocaleDateString('es-PE');
+          const updated = prev.map(item =>
+            item.id === id ? { ...item, estadoPago: 'PAGADO' as const, activacion: hoyStr } : item
+          );
+          localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
+          return updated;
+        });
       }
     } finally {
       setLoading(false);
