@@ -1,4 +1,4 @@
-import type { InventoryItem } from '../../interfaces/luckyPhoneTypes';
+import type { InventoryItem } from '../interfaces/luckyPhoneTypes';
 
 export const exportarInventarioExcel = (items: InventoryItem[], categoriaSeleccionada: string = 'TODOS') => {
   const filtered = categoriaSeleccionada === 'TODOS' 

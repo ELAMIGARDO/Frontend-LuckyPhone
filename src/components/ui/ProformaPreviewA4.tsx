@@ -58,7 +58,7 @@ export const ProformaPreviewA4: React.FC<ProformaPreviewA4Props> = ({
                   )}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">RUC: {companyInfo.ruc} • Venta de Celulares & Servicio Técnico</p>
+              <p className="text-[11px] text-slate-500 font-medium">RUC: {companyInfo.ruc} • Venta de Celulares </p>
               <p className="text-[11px] text-slate-500 font-medium">{companyInfo.direccion} • Tel: {companyInfo.telefono}</p>
             </div>
             <div className="text-right">
@@ -80,7 +80,7 @@ export const ProformaPreviewA4: React.FC<ProformaPreviewA4Props> = ({
               <p className="text-sm font-bold text-gray-800">
                 {data.clienteNombre || 'Cliente General'}
               </p>
-              
+
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block pt-2">
                 Dirección
               </span>
