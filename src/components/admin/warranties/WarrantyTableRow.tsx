@@ -69,22 +69,35 @@ export const WarrantyTableRow: React.FC<WarrantyTableRowProps> = ({
       <td className="py-3.5 px-4 font-mono text-slate-600">{w.activacion}</td>
       <td className="py-3.5 px-4 font-mono font-bold text-rose-600">{w.caducidad}</td>
 
-      {/* ESTADO LEGAL */}
+      {/* ESTADO LEGAL Y PAGO */}
       <td className="py-3.5 px-4 text-center">
         {isAnulados ? (
           <span className="inline-block px-2.5 py-1 rounded-lg text-xs font-bold border text-rose-700 bg-rose-50 border-rose-200">
             Anulado
           </span>
         ) : (
-          <span
-            className={`inline-block px-2.5 py-1 rounded-lg text-xs font-bold border ${
-              w.diasRestantes > 0
-                ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                : 'text-rose-700 bg-rose-50 border-rose-200 animate-pulse'
-            }`}
-          >
-            {w.diasRestantes > 0 ? `Vigente (${w.diasRestantes}d)` : `Caducado (Vencido)`}
-          </span>
+          <div className="flex flex-col items-center gap-1">
+            <span
+              className={`inline-block px-2.5 py-0.5 rounded-lg text-[11px] font-bold border ${
+                w.diasRestantes > 0
+                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                  : 'text-rose-700 bg-rose-50 border-rose-200 animate-pulse'
+              }`}
+            >
+              {w.diasRestantes > 0 ? `Vigente (${w.diasRestantes}d)` : `Caducado`}
+            </span>
+            <span
+              className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold ${
+                w.estadoPago === 'PAGADO'
+                  ? 'bg-emerald-600 text-white'
+                  : w.estadoPago === 'ANULADO'
+                  ? 'bg-slate-400 text-white'
+                  : 'bg-amber-500 text-white animate-bounce'
+              }`}
+            >
+              {w.estadoPago || 'PENDIENTE'}
+            </span>
+          </div>
         )}
       </td>
 
@@ -100,7 +113,16 @@ export const WarrantyTableRow: React.FC<WarrantyTableRowProps> = ({
             <FaUndo className="text-xs" /> Restaurar
           </button>
         ) : (
-          <div className="flex items-center justify-center gap-1.5">
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            {w.estadoPago !== 'PAGADO' && (
+              <button
+                onClick={() => onEdit(w)} // Will trigger payment action if called or dedicated
+                className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-sm"
+                title="Cobrar Proforma"
+              >
+                💵 Cobrar
+              </button>
+            )}
             <button
               onClick={() => onEdit(w)}
               className="inline-flex items-center gap-1 text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer shadow-sm"

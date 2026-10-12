@@ -1,3 +1,17 @@
+export type EstadoDispositivo = 'Disponible' | 'Reservado' | 'Vendido';
+
+export interface ItemCelularDTO {
+  id?: number;
+  productoId?: number;
+  imei1: string;
+  imei2?: string;
+  numeroSerial?: string;
+  bateria?: string;
+  estadoDispositivo?: EstadoDispositivo;
+  creadoAt?: string;
+  actualizadoAt?: string;
+}
+
 // 1. DTO de respuesta para el catálogo de productos (Backend Spring Boot)
 export interface ProductoResponseDTO {
   id: number;
@@ -11,13 +25,15 @@ export interface ProductoResponseDTO {
   ram: string;
   color: string;
   estado: string;
-  bateria: string;
   imagenUrl: string;
   whatsappLink: string; // URL autogenerada por el backend con mensaje comercial listo
+  categoriaNombre?: string;
+  categoriaId?: number;
+  itemsCelulares?: ItemCelularDTO[];
+  bateria: string;
   imei1?: string;
   imei2?: string;
   numeroSerial?: string;
-  categoriaNombre?: string;
 }
 
 // 2. DTO de solicitud para crear/actualizar un producto (Admin)
@@ -32,12 +48,9 @@ export interface ProductoRequestDTO {
   ram?: string;
   color?: string;
   estado?: string;
-  bateria?: string;
   categoriaId: number;
   imagenUrl?: string;
-  imei1?: string;
-  imei2?: string;
-  numeroSerial?: string;
+  itemsCelulares?: ItemCelularDTO[];
 }
 
 // 3. Estructura de Paginación devuelta por Spring Boot

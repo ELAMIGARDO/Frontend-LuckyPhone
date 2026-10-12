@@ -71,11 +71,20 @@ export interface InventoryItem {
   numeroSerie?: string;
   numeroSerial?: string;
   categoriaNombre?: string;
+  categoriaId?: number;
   estado: 'Nuevo / Sellado' | 'Open Box' | 'Seminuevo / Usado' | 'Reacondicionado' | string;
   bateria?: string;
   descripcion?: string;
   imagenUrl?: string;
   activo?: boolean;
+  itemsCelulares?: Array<{
+    id?: number;
+    imei1: string;
+    imei2?: string;
+    numeroSerial?: string;
+    bateria?: string;
+    estadoDispositivo?: 'Disponible' | 'Reservado' | 'Vendido';
+  }>;
 }
 
 

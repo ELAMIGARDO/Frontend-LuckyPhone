@@ -59,21 +59,20 @@ export const getProductosAdminListaCompletaService = async (): Promise<ProductoR
       nombre: p.nombre,
       descripcion: p.descripcion,
       precio: p.precio,
-      stock: p.stock,
+      stock: p.stock !== undefined ? p.stock : (p.itemsCelulares ? p.itemsCelulares.filter((i: any) => i.estadoDispositivo === 'Disponible').length : 0),
       marca: p.marca,
       modelo: p.modelo,
       almacenamiento: p.almacenamiento,
       ram: p.ram,
       color: p.color,
       estado: p.estado,
-      bateria: p.bateria,
+      bateria: p.bateria || (p.itemsCelulares && p.itemsCelulares[0] ? p.itemsCelulares[0].bateria : '100%'),
       imagenUrl: p.imagenUrl,
       whatsappLink: p.whatsappLink || `https://wa.me/51912345678?text=Hola,%20deseo%20comprar%20el%20${encodeURIComponent(p.nombre || p.modelo || '')}`,
       activo: p.activo !== undefined ? p.activo : true,
-      imei1: p.imei1,
-      imei2: p.imei2,
-      numeroSerial: p.numeroSerial,
-      categoriaNombre: p.categoria ? p.categoria.nombre : 'Celulares'
+      itemsCelulares: p.itemsCelulares || [],
+      categoriaNombre: p.categoria ? p.categoria.nombre : (p.categoriaNombre || 'Celulares'),
+      categoriaId: p.categoria ? p.categoria.id : p.categoriaId
     }));
 
     localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(mapped));
@@ -196,5 +195,50 @@ export const eliminarProductoService = async (id: number): Promise<void> => {
 
 export const cambiarEstadoProductoService = async (id: number): Promise<ProductoResponseDTO> => {
   const { data } = await luckyphoneApi.patch<ProductoResponseDTO>(`/productos/${id}/estado`);
+  return data;
+};
+
+// ==========================================
+// SERVICIOS PARA ITEMS CELULARES (HARDWARE)
+// ==========================================
+
+export const getItemsCelularesDisponiblesService = async (productoId?: number) => {
+  const { data } = await luckyphoneApi.get(`/items-celulares/disponibles`, {
+    params: productoId ? { productoId } : {}
+  });
+  return data;
+};
+
+export const agregarItemCelularService = async (item: {
+  productoId: number;
+  imei1: string;
+  imei2?: string;
+  numeroSerial?: string;
+  bateria?: string;
+}) => {
+  const { data } = await luckyphoneApi.post(`/items-celulares`, item);
+  return data;
+};
+
+export const eliminarItemCelularService = async (id: number) => {
+  await luckyphoneApi.delete(`/items-celulares/${id}`);
+};
+
+// ==========================================
+// SERVICIOS PARA PROFORMAS / GARANTIAS & PAGOS
+// ==========================================
+
+export const registrarPagoGarantiaService = async (id: string) => {
+  const { data } = await luckyphoneApi.post(`/garantias/${id}/pagar`);
+  return data;
+};
+
+export const anularGarantiaService = async (id: string) => {
+  const { data } = await luckyphoneApi.delete(`/garantias/${id}`);
+  return data;
+};
+
+export const emitirGarantiaService = async (garantiaData: any) => {
+  const { data } = await luckyphoneApi.post(`/garantias`, garantiaData);
   return data;
 };

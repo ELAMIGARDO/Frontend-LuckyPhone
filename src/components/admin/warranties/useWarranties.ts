@@ -18,6 +18,7 @@ export interface Garantia {
   duracionGarantia?: string;
   diasRestantes: number;
   estado: 'Vigente' | 'Caducado';
+  estadoPago?: 'PENDIENTE' | 'PAGADO' | 'ANULADO';
   alerta: boolean;
   eliminadoAt: string | null;
 }
@@ -248,6 +249,22 @@ export const useWarranties = () => {
     }
   };
 
+  const handlePagarProforma = async (id: string) => {
+    setLoading(true);
+    try {
+      const response = await luckyphoneApi.post(`/garantias/${id}/pagar`).catch(() => null);
+      if (!response || response.status === 200 || response.status === 201) {
+        setGarantias(prev =>
+          prev.map(item =>
+            item.id === id ? { ...item, estadoPago: 'PAGADO', activacion: new Date().toLocaleDateString('es-PE') } : item
+          )
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const [garantiaEditando, setGarantiaEditando] = useState<Garantia | null>(null);
 
@@ -348,6 +365,7 @@ export const useWarranties = () => {
     handleOpenAnularModal,
     ejecutarAnulacion,
     handleRestaurar,
+    handlePagarProforma,
     handleOpenEditModal,
     handleUpdateGarantia,
     handleReimprimirProforma
