@@ -5,10 +5,12 @@ import {
   FaUsers,
   FaDatabase
 } from 'react-icons/fa';
-import { AttributesSettingsTab } from '../components/admin/settings/AttributesSettingsTab';
-import { CompanySettingsTab } from '../components/admin/settings/CompanySettingsTab';
-import { UsersSettingsTab } from '../components/admin/settings/UsersSettingsTab';
-import { BackupSettingsTab } from '../components/admin/settings/BackupSettingsTab';
+import {
+  AttributesSettingsTab,
+  CompanySettingsTab,
+  UsersSettingsTab,
+  BackupSettingsTab
+} from '../components/admin/settings';
 
 export const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<'atributos' | 'empresa' | 'usuarios' | 'backup'>('atributos');
