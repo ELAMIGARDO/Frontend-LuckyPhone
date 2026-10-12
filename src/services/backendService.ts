@@ -83,6 +83,25 @@ export const getProductosAdminListaCompletaService = async (): Promise<ProductoR
   }
 };
 
+export const getColoresDisponiblesService = async (): Promise<string[]> => {
+  try {
+    const { data } = await luckyphoneApi.get<string[]>(`/productos/colores-disponibles`);
+    if (Array.isArray(data) && data.length > 0) {
+      return data;
+    }
+  } catch (error) {
+    console.warn("No se pudo obtener colores del endpoint dedicado. Extrayendo de productos en memoria.", error);
+  }
+  // Fallback seguro: extraer de productos en localStorage o memoria
+  try {
+    const prods = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
+    const unique = Array.from(new Set(prods.map((p: any) => p.color?.trim()).filter(Boolean))) as string[];
+    return unique.sort();
+  } catch {
+    return ['Negro', 'Blanco', 'Titanio Natural', 'Titanio Azul', 'Titanio Negro', 'Plata', 'Oro'];
+  }
+};
+
 export const guardarProductoLocalService = (prod: any) => {
   try {
     const prev = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');

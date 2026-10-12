@@ -473,6 +473,7 @@ export const AdminDashboardPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveDevice}
         onFileUpload={handleFileUpload}
+        coloresExistentes={Array.from(new Set(inventory.map(i => i.color?.trim()).filter(Boolean) as string[])).sort()}
       />
     </div>
   );

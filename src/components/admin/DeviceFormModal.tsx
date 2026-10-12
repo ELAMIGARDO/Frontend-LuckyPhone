@@ -11,6 +11,8 @@ import {
   FaTrashAlt
 } from 'react-icons/fa';
 
+import { getColoresDisponiblesService } from '../../services/backendService';
+
 export interface DeviceFormData {
   modelo: string;
   marca: string;
@@ -46,6 +48,7 @@ interface DeviceFormModalProps {
   onClose: () => void;
   onSave: (e: React.FormEvent) => void;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  coloresExistentes?: string[];
 }
 
 export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
@@ -55,8 +58,25 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
   setFormData,
   onClose,
   onSave,
-  onFileUpload
+  onFileUpload,
+  coloresExistentes: propColores
 }) => {
+  const [colores, setColores] = React.useState<string[]>(propColores || []);
+
+  React.useEffect(() => {
+    if (propColores && propColores.length > 0) {
+      setColores(propColores);
+    } else if (isOpen) {
+      getColoresDisponiblesService()
+        .then((data) => {
+          if (data && data.length > 0) {
+            setColores(data);
+          }
+        })
+        .catch((err) => console.error("Error al cargar colores en modal:", err));
+    }
+  }, [isOpen, propColores]);
+
   if (!isOpen) return null;
 
   const isCelularCategory = !formData.categoriaNombre || formData.categoriaNombre === 'Celulares';
@@ -256,15 +276,24 @@ export const DeviceFormModal: React.FC<DeviceFormModalProps> = ({
               </select>
             </div>
 
-            <div>
-              <label className="block text-slate-700 mb-1">Color del Equipo</label>
+            <div className="flex flex-col">
+              <label htmlFor="color-input" className="block text-slate-700 mb-1">
+                Color del Equipo
+              </label>
               <input
+                id="color-input"
+                list="colores-sugeridos"
                 type="text"
-                placeholder="Ej: Negro Titanio, Blanco, Azul"
+                placeholder="Escribe o selecciona un color (Ej: Titanio Natural)"
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 text-sm font-medium bg-white"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-500/20 text-sm font-medium bg-white"
               />
+              <datalist id="colores-sugeridos">
+                {colores.map((col, idx) => (
+                  <option key={`${col}-${idx}`} value={col} />
+                ))}
+              </datalist>
             </div>
           </div>
 
