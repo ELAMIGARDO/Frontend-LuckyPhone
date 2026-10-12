@@ -3,12 +3,9 @@ import {
   FaMobileAlt,
   FaTimes,
   FaBatteryFull,
-  FaBarcode,
   FaUpload,
   FaEye,
-  FaEyeSlash,
-  FaPlus,
-  FaTrashAlt
+  FaEyeSlash
 } from 'react-icons/fa';
 
 import { getAtributosConfigService } from '../../services/backendService';
