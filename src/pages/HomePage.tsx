@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Brand } from "../components/home/Brand";
 import { FeatureGrid } from "../components/home/FeatureGrid";
 import { CardProduct } from "../components/products/CardProduct";
+import { CustomerReviews } from "../components/home/CustomerReviews";
 import { getProductosPaginadosService } from "../services/backendService";
 import type { ProductoResponseDTO } from "../interfaces";
 
@@ -31,7 +32,7 @@ export const HomePage = () => {
 
         {cargando ? (
           <div className="flex justify-center items-center py-16">
-            <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-[#0077FF] border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : productos.length === 0 ? (
           <div className="text-center py-12 text-slate-400 font-medium text-sm">
@@ -45,6 +46,9 @@ export const HomePage = () => {
           </div>
         )}
       </div>
+
+      {/* Sección de Reseñas de Clientes (Frontend Público) */}
+      <CustomerReviews />
 
       <Brand />
     </div>

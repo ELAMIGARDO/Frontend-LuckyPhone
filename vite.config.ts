@@ -3,7 +3,6 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import babel from '@rolldown/plugin-babel'
 
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -13,6 +12,13 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   build: {
     chunkSizeWarningLimit: 1200,

@@ -14,6 +14,10 @@ export interface ProductoResponseDTO {
   bateria: string;
   imagenUrl: string;
   whatsappLink: string; // URL autogenerada por el backend con mensaje comercial listo
+  imei1?: string;
+  imei2?: string;
+  numeroSerial?: string;
+  categoriaNombre?: string;
 }
 
 // 2. DTO de solicitud para crear/actualizar un producto (Admin)
@@ -31,6 +35,9 @@ export interface ProductoRequestDTO {
   bateria?: string;
   categoriaId: number;
   imagenUrl?: string;
+  imei1?: string;
+  imei2?: string;
+  numeroSerial?: string;
 }
 
 // 3. Estructura de Paginación devuelta por Spring Boot

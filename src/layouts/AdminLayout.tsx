@@ -4,7 +4,6 @@ import { Outlet, Link, useNavigate } from 'react-router-dom';
 export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
 
-  // Obtener información del usuario logueado
   let userEmail = 'Administrador';
   try {
     const userStr = localStorage.getItem('user');
@@ -22,14 +21,14 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
-      {/* Barra Superior del Panel Admin (Estilo Claro LuckyPhone) */}
+      {/* Barra Superior del Panel Admin */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-2xl text-white font-black grid place-items-center text-xl shadow-md"
             style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%)' }}
           >
-            🛡️
+            📱
           </div>
           <div>
             <h1 className="font-black text-lg text-slate-900 tracking-tight leading-none">LuckyPhone Admin</h1>
@@ -44,11 +43,10 @@ export const AdminLayout: React.FC = () => {
 
           <Link
             to="/"
-            target="_blank"
             className="text-xs font-bold text-slate-700 hover:text-purple-600 bg-slate-100 hover:bg-purple-50 px-3.5 py-2 rounded-xl transition-all border border-slate-200 flex items-center gap-1.5"
-            title="Abrir tienda pública en nueva pestaña"
+            title="Ir a la tienda pública"
           >
-            <span>🌐</span> Ver Tienda
+            <span>🛍️</span> Ver Tienda
           </Link>
 
           <button
@@ -61,8 +59,8 @@ export const AdminLayout: React.FC = () => {
         </div>
       </header>
 
-      {/* Contenido Exclusivo de Administración */}
-      <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+      {/* Contenido Exclusivo de Administración (Widescreen Máximo) */}
+      <main className="flex-1 p-6 lg:p-8 w-full max-w-[1650px] mx-auto">
         <Outlet />
       </main>
 

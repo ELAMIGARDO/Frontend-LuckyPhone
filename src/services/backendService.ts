@@ -10,15 +10,128 @@ import type {
   ClienteResponseDTO
 } from '../interfaces';
 
-// ==========================================
-// 🌐 SERVICIOS PÚBLICOS DE PRODUCTOS Y POLÍTICAS
-// ==========================================
+const LOCAL_STORAGE_PRODUCTS_KEY = 'luckyphone_admin_products';
 
 export const getProductosPaginadosService = async (page = 0, size = 12): Promise<PageResponse<ProductoResponseDTO>> => {
-  const { data } = await luckyphoneApi.get<PageResponse<ProductoResponseDTO>>(`/productos/lista`, {
-    params: { page, size }
-  });
-  return data;
+  try {
+    const { data } = await luckyphoneApi.get<PageResponse<ProductoResponseDTO>>(`/productos/lista`, {
+      params: { page, size }
+    });
+    
+    const localSaved: ProductoResponseDTO[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
+    const activeLocal = localSaved.filter((p: any) => p.activo !== false);
+
+    if (activeLocal.length > 0) {
+      const backendIds = new Set((data.content || []).map(p => String(p.id)));
+      const uniqueLocal = activeLocal.filter(p => !backendIds.has(String(p.id)));
+
+      const combined = [...uniqueLocal, ...(data.content || [])];
+      return {
+        ...data,
+        content: combined,
+        totalElements: (data.totalElements || 0) + uniqueLocal.length
+      };
+    }
+
+    return data;
+  } catch (error) {
+    console.warn("Backend Spring Boot no disponible. Usando datos guardados en localStorage...", error);
+    const localSaved: ProductoResponseDTO[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
+    const activeLocal = localSaved.filter((p: any) => p.activo !== false);
+    return {
+      content: activeLocal,
+      totalElements: activeLocal.length,
+      totalPages: 1,
+      size: size,
+      number: page,
+      first: page === 0,
+      last: true,
+      empty: activeLocal.length === 0
+    };
+  }
+};
+
+export const getProductosAdminListaCompletaService = async (): Promise<ProductoResponseDTO[]> => {
+  try {
+    const { data } = await luckyphoneApi.get<any[]>(`/productos/lista-completa`);
+    const mapped: ProductoResponseDTO[] = data.map(p => ({
+      id: p.id,
+      nombre: p.nombre,
+      descripcion: p.descripcion,
+      precio: p.precio,
+      stock: p.stock,
+      marca: p.marca,
+      modelo: p.modelo,
+      almacenamiento: p.almacenamiento,
+      ram: p.ram,
+      color: p.color,
+      estado: p.estado,
+      bateria: p.bateria,
+      imagenUrl: p.imagenUrl,
+      whatsappLink: p.whatsappLink || `https://wa.me/51912345678?text=Hola,%20deseo%20comprar%20el%20${encodeURIComponent(p.nombre || p.modelo || '')}`,
+      activo: p.activo !== undefined ? p.activo : true,
+      imei1: p.imei1,
+      imei2: p.imei2,
+      numeroSerial: p.numeroSerial,
+      categoriaNombre: p.categoria ? p.categoria.nombre : 'Celulares'
+    }));
+
+    localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(mapped));
+    return mapped;
+  } catch (error) {
+    console.warn("No se pudo obtener la lista completa del backend. Usando cache local.", error);
+    return JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
+  }
+};
+
+export const guardarProductoLocalService = (prod: any) => {
+  try {
+    const prev = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
+    const existingIndex = prev.findIndex((p: any) => String(p.id) === String(prod.id) || (p.modelo && p.modelo === prod.modelo));
+    
+    const newProd: ProductoResponseDTO & { imei?: string; imei2?: string; numeroSerie?: string; activo?: boolean } = {
+      id: prod.id || Date.now(),
+      nombre: prod.nombre || `${prod.marca || ''} ${prod.modelo || ''}`,
+      descripcion: prod.descripcion || '',
+      precio: prod.precio,
+      stock: prod.stock,
+      marca: prod.marca,
+      modelo: prod.modelo,
+      almacenamiento: prod.almacenamiento,
+      ram: prod.ram,
+      color: prod.color,
+      estado: prod.estado,
+      bateria: prod.bateria || '100%',
+      imagenUrl: prod.imagenUrl || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80',
+      whatsappLink: `https://wa.me/51912345678?text=Hola,%20deseo%20comprar%20el%20${encodeURIComponent(prod.nombre || prod.modelo)}`,
+      imei: prod.imei,
+      imei2: prod.imei2,
+      numeroSerie: prod.numeroSerie,
+      activo: prod.activo !== undefined ? prod.activo : true
+    };
+
+    let updated = [];
+    if (existingIndex >= 0) {
+      updated = [...prev];
+      updated[existingIndex] = newProd;
+    } else {
+      updated = [newProd, ...prev];
+    }
+    localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(updated));
+    return newProd;
+  } catch (e) {
+    console.error("Error guardando producto en localStorage", e);
+  }
+};
+
+export const eliminarProductoLocalService = (id: string | number) => {
+  try {
+    const prev = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
+    const updated = prev.filter((p: any) => String(p.id) !== String(id));
+    localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.error("Error eliminando producto de localStorage", e);
+  }
 };
 
 export const buscarProductosService = async (nombre: string): Promise<ProductoResponseDTO[]> => {
@@ -48,10 +161,6 @@ export const getPrivacidadService = async (): Promise<string> => {
   return data;
 };
 
-// ==========================================
-// 🔐 SERVICIOS DE AUTENTICACIÓN
-// ==========================================
-
 export const loginService = async (dto: LoginRequestDTO): Promise<AuthResponseDTO> => {
   const { data } = await luckyphoneApi.post<AuthResponseDTO>(`/auth/login`, dto);
   if (data.token) {
@@ -71,11 +180,7 @@ export const logoutService = () => {
   localStorage.removeItem('user');
 };
 
-// ==========================================
-// 🔐 SERVICIOS ADMINISTRATIVOS (ROLE_ADMIN)
-// ==========================================
-
-export const crearProductoService = async (dto: ProductoRequestDTO): Promise<ProductoResponseDTO> => {
+export const crearProductoService = async (dto: ProductoRequestDTO): Promise<ProductoResponseDTO | null> => {
   const { data } = await luckyphoneApi.post<ProductoResponseDTO>(`/productos`, dto);
   return data;
 };
