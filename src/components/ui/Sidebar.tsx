@@ -1,15 +1,15 @@
 import React from 'react';
-import { 
-  FaChartPie, 
-  FaMobileAlt, 
-  FaFileInvoiceDollar, 
-  FaShieldAlt, 
-  FaStar, 
-  FaSignOutAlt,
-  FaStore,
-  FaCog,
-  FaFileAlt
-} from 'react-icons/fa';
+import {
+  LayoutDashboard,
+  Smartphone,
+  FileSpreadsheet,
+  ShieldCheck,
+  BarChart3,
+  Star,
+  Settings,
+  Store,
+  LogOut
+} from 'lucide-react';
 import type { TabType } from '../../interfaces/luckyPhoneTypes';
 import { useInventoryContext } from '../../context/InventoryContext';
 
@@ -20,68 +20,122 @@ interface SidebarProps {
   setIsOpenMobile?: (isOpen: boolean) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  activeTab, 
+export const Sidebar: React.FC<SidebarProps> = ({
+  activeTab,
   setActiveTab,
   isOpenMobile,
-  setIsOpenMobile 
+  setIsOpenMobile
 }) => {
   const { counts } = useInventoryContext();
 
   const menuItems = [
-    { id: 'metrics' as TabType, label: 'Dashboard Ejecutivo', icon: FaChartPie },
-    { id: 'inventory' as TabType, label: 'Inventario de Celulares', icon: FaMobileAlt, badge: counts.disponibles, badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-    { id: 'reports' as TabType, label: 'Reportes & Auditoría', icon: FaFileAlt },
-    { id: 'proforma' as TabType, label: 'Emitir Proforma', icon: FaFileInvoiceDollar },
-    { id: 'warranties' as TabType, label: 'Control de Garantías', icon: FaShieldAlt, badge: counts.vigentes, badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-    { id: 'reviews' as TabType, label: 'Reseñas de Clientes', icon: FaStar },
-    { id: 'settings' as TabType, label: 'Ajustes del Sistema', icon: FaCog },
+    {
+      id: 'metrics' as TabType,
+      label: 'Dashboard Ejecutivo',
+      icon: LayoutDashboard
+    },
+    {
+      id: 'inventory' as TabType,
+      label: 'Inventario de Celulares',
+      icon: Smartphone,
+      badge: counts.disponibles
+    },
+    {
+      id: 'proforma' as TabType,
+      label: 'Emitir Proforma',
+      icon: FileSpreadsheet
+    },
+    {
+      id: 'warranties' as TabType,
+      label: 'Control de Garantías',
+      icon: ShieldCheck,
+      badge: counts.vigentes
+    },
+    {
+      id: 'reports' as TabType,
+      label: 'Reportes & Auditoría',
+      icon: BarChart3
+    },
+    {
+      id: 'reviews' as TabType,
+      label: 'Reseñas de Clientes',
+      icon: Star
+    },
+    {
+      id: 'settings' as TabType,
+      label: 'Ajustes del Sistema',
+      icon: Settings
+    }
   ];
 
   return (
-    <aside className={`
-      fixed inset-y-0 left-0 z-40 w-72 bg-slate-950 text-white flex flex-col justify-between transition-transform duration-300 ease-in-out md:translate-x-0 print:hidden shadow-2xl border-r border-slate-800
-      ${isOpenMobile ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-    `}>
-      {/* Header Logo */}
+    <aside
+      className={`
+        fixed inset-y-0 left-0 z-40 w-72 bg-zinc-950 text-zinc-100 flex flex-col justify-between 
+        transition-transform duration-200 ease-out md:translate-x-0 print:hidden 
+        border-r border-zinc-800/80 shadow-xl
+        ${isOpenMobile ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}
+    >
       <div>
-        <div className="p-6 flex items-center gap-3 border-b border-slate-800/80 bg-slate-900">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-blue-600 flex items-center justify-center text-white font-black shadow-lg shadow-purple-600/30 text-xl">
-            <FaStore />
+        <div className="p-5 flex items-center gap-3 border-b border-zinc-850 bg-zinc-950/80 backdrop-blur-md">
+          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-purple-400 font-bold shadow-2xs">
+            <Store className="w-4 h-4" />
           </div>
           <div>
-            <h1 className="font-extrabold text-xl tracking-wider text-white flex items-center gap-1">
+            <h1 className="font-bold text-base tracking-tight text-white flex items-center gap-1">
               LUCKY<span className="text-purple-400">PHONE</span>
             </h1>
-            <p className="text-[10px] text-purple-300/80 font-bold tracking-widest uppercase">ADMIN DASHBOARD</p>
+            <p className="text-[10px] text-zinc-500 font-medium tracking-wider uppercase">
+              Admin Console
+            </p>
           </div>
         </div>
 
-        {/* Navigation items */}
-        <nav className="p-4 space-y-1.5 mt-2">
+        <nav className="p-3 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => {
                   setActiveTab(item.id);
                   if (setIsOpenMobile) setIsOpenMobile(false);
                 }}
                 className={`
-                  w-full flex items-center justify-between px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 text-left group relative overflow-hidden
-                  ${isActive 
-                    ? 'bg-purple-600/20 text-purple-400 border-l-4 border-purple-500 shadow-md shadow-purple-950/40' 
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80'}
+                  w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium 
+                  transition-all duration-150 text-left group cursor-pointer border
+                  ${
+                    isActive
+                      ? 'bg-zinc-900 text-white border-zinc-800 shadow-2xs font-semibold'
+                      : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/60 border-transparent'
+                  }
                 `}
               >
-                <div className="flex items-center gap-3.5">
-                  <Icon className={`text-lg transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-purple-400' : 'text-slate-400 group-hover:text-purple-400'}`} />
+                <div className="flex items-center gap-3">
+                  <Icon
+                    className={`w-4 h-4 transition-colors ${
+                      isActive
+                        ? 'text-purple-400'
+                        : 'text-zinc-500 group-hover:text-zinc-300'
+                    }`}
+                  />
                   <span>{item.label}</span>
                 </div>
+
                 {item.badge !== undefined && (
-                  <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full border shadow-2xs ${item.badgeColor}`}>
+                  <span
+                    className={`
+                      px-2 py-0.5 text-[11px] font-mono font-medium rounded-md border transition-colors
+                      ${
+                        isActive
+                          ? 'bg-purple-950/60 text-purple-300 border-purple-800/60'
+                          : 'bg-zinc-900 text-zinc-400 border-zinc-800'
+                      }
+                    `}
+                  >
                     {item.badge}
                   </span>
                 )}
@@ -91,19 +145,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Footer User Info */}
-      <div className="p-4 m-4 rounded-xl bg-slate-900 border border-slate-800">
+      <div className="p-3 m-3 rounded-lg bg-zinc-900/70 border border-zinc-800/80">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 rounded-full bg-purple-600/20 flex items-center justify-center border border-purple-500/40 text-purple-300 font-bold text-sm">
+          <div className="w-8 h-8 rounded-md bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-300 font-semibold text-xs">
             AP
           </div>
           <div className="overflow-hidden">
-            <p className="text-xs font-bold text-slate-200 truncate">Asesor Lucky Phone</p>
-            <p className="text-[10px] text-purple-300/80 font-mono">admin@luckyphone.pe</p>
+            <p className="text-xs font-medium text-zinc-200 truncate">Asesor Lucky Phone</p>
+            <p className="text-[11px] text-zinc-500 font-mono truncate">admin@luckyphone.pe</p>
           </div>
         </div>
-        <button className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-300 text-xs font-bold transition-colors border border-slate-700 hover:border-rose-700/40">
-          <FaSignOutAlt /> Cerrar Sesión
+
+        <button
+          type="button"
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-md bg-zinc-900 hover:bg-zinc-800 hover:text-red-300 text-zinc-400 text-xs font-medium transition-colors border border-zinc-800 cursor-pointer"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Cerrar Sesión</span>
         </button>
       </div>
     </aside>
