@@ -1,31 +1,31 @@
 import React, { useState } from 'react';
 import {
-  FaSearch,
-  FaPlus,
-  FaEdit,
-  FaTrashAlt,
-  FaEye,
-  FaEyeSlash,
-  FaCheckCircle,
-  FaBatteryFull,
-  FaImage,
-  FaChevronDown,
-  FaChevronUp,
-  FaBarcode,
-  FaFingerprint,
-  FaHashtag,
-  FaBox,
-  FaMobileAlt,
-  FaPlug,
-  FaHeadphones,
-  FaShieldAlt,
-  FaShoppingCart,
-  FaUndoAlt,
-  FaSpinner
-} from 'react-icons/fa';
-import { Archive, CheckCircle2 } from 'lucide-react';
+  Smartphone,
+  AlertTriangle,
+  CheckCircle,
+  Archive,
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
+  ShoppingCart,
+  Loader2,
+  Layers,
+  Zap,
+  Headphones,
+  Shield,
+  Battery,
+  Barcode,
+  Hash,
+  Image as ImageIcon
+} from 'lucide-react';
 import type { InventoryItem } from '../../../interfaces/luckyPhoneTypes';
-import { useInventory } from '../hooks/useInventory';
+import { useInventory, type InventoryProductItem } from '../hooks/useInventory';
 
 interface InventoryTableProps {
   onOpenCreateModal: () => void;
@@ -57,15 +57,15 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   const [actionLoadingUnitId, setActionLoadingUnitId] = useState<number | null>(null);
 
   const toggleRow = (id: string) => {
-    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
+    setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const categoryTabs = [
-    { id: 'TODOS', label: 'Todos', Icon: FaBox },
-    { id: 'Celulares', label: 'Celulares', Icon: FaMobileAlt },
-    { id: 'Cargadores', label: 'Cargadores', Icon: FaPlug },
-    { id: 'Audífonos', label: 'Audífonos', Icon: FaHeadphones },
-    { id: 'Accesorios', label: 'Accesorios', Icon: FaShieldAlt },
+    { id: 'TODOS', label: 'Todos', Icon: Layers },
+    { id: 'Celulares', label: 'Celulares', Icon: Smartphone },
+    { id: 'Cargadores', label: 'Cargadores', Icon: Zap },
+    { id: 'Audífonos', label: 'Audífonos', Icon: Headphones },
+    { id: 'Accesorios', label: 'Accesorios', Icon: Shield }
   ];
 
   const handleMarcarVendido = async (productoId: string, itemId?: number) => {
@@ -89,34 +89,72 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('¿Estás seguro de eliminar este producto del inventario?')) {
+    if (window.confirm('¿Confirmas que deseas eliminar este producto del inventario?')) {
       await eliminarProducto(id);
     }
   };
 
+  const renderBadgeEstadoProducto = (estado: string) => {
+    if (estado === 'Nuevo / Sellado') {
+      return (
+        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md px-2 py-0.5 text-[11px] font-medium">
+          <CheckCircle className="w-3 h-3 text-emerald-600" />
+          {estado}
+        </span>
+      );
+    }
+    if (estado === 'Open Box') {
+      return (
+        <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-700 border border-sky-200 rounded-md px-2 py-0.5 text-[11px] font-medium">
+          <CheckCircle className="w-3 h-3 text-sky-600" />
+          {estado}
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-md px-2 py-0.5 text-[11px] font-medium">
+        <AlertTriangle className="w-3 h-3 text-amber-600" />
+        {estado}
+      </span>
+    );
+  };
+
+  const renderBadgeStock = (item: InventoryProductItem) => {
+    if (item.stockDisponibleReal === 0) {
+      return (
+        <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 rounded-md px-2 py-0.5 text-xs font-medium font-mono">
+          <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+          0 u. (Sin stock)
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md px-2 py-0.5 text-xs font-medium font-mono">
+        <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+        {item.stockDisponibleReal} u.
+      </span>
+    );
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden w-full transition-all">
-      {/* ======================================================== */}
-      {/* 1. SUB-PESTAÑAS DE STOCK: EN STOCK vs AGOTADOS / HISTORIAL */}
-      {/* ======================================================== */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/70 px-4 pt-3">
+    <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden w-full">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 pt-3">
         <div className="flex items-center gap-2">
-          {/* Sub-Pestaña En Stock */}
           <button
             type="button"
             onClick={() => setStockTab('disponibles')}
-            className={`flex items-center gap-2.5 px-4 py-2.5 font-extrabold text-xs rounded-t-xl border-t border-x transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-t-md border-t border-x transition-colors cursor-pointer ${
               stockTab === 'disponibles'
-                ? 'bg-white text-purple-700 border-slate-200 border-b-white -mb-px shadow-2xs'
+                ? 'bg-white text-slate-900 border-slate-200 border-b-white -mb-px'
                 : 'bg-transparent text-slate-500 hover:text-slate-800 border-transparent'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle className="w-4 h-4 text-emerald-600" />
             <span>En Stock</span>
             <span
-              className={`px-2 py-0.5 text-[11px] font-mono font-bold rounded-full transition-all ${
+              className={`px-1.5 py-0.2 text-[11px] font-mono font-bold rounded-md ${
                 stockTab === 'disponibles'
-                  ? 'bg-purple-100 text-purple-800'
+                  ? 'bg-slate-100 text-slate-900'
                   : 'bg-slate-200 text-slate-600'
               }`}
             >
@@ -124,22 +162,21 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
             </span>
           </button>
 
-          {/* Sub-Pestaña Agotados / Historial */}
           <button
             type="button"
             onClick={() => setStockTab('agotados')}
-            className={`flex items-center gap-2.5 px-4 py-2.5 font-extrabold text-xs rounded-t-xl border-t border-x transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-t-md border-t border-x transition-colors cursor-pointer ${
               stockTab === 'agotados'
-                ? 'bg-white text-rose-700 border-slate-200 border-b-white -mb-px shadow-2xs'
+                ? 'bg-white text-red-700 border-slate-200 border-b-white -mb-px'
                 : 'bg-transparent text-slate-500 hover:text-slate-800 border-transparent'
             }`}
           >
-            <Archive className="w-4 h-4 text-rose-500" />
+            <Archive className="w-4 h-4 text-red-600" />
             <span>Agotados / Historial</span>
             <span
-              className={`px-2 py-0.5 text-[11px] font-mono font-bold rounded-full transition-all ${
+              className={`px-1.5 py-0.2 text-[11px] font-mono font-bold rounded-md ${
                 stockTab === 'agotados'
-                  ? 'bg-rose-100 text-rose-800'
+                  ? 'bg-red-100 text-red-800'
                   : 'bg-slate-200 text-slate-600'
               }`}
             >
@@ -148,73 +185,63 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           </button>
         </div>
 
-        {/* Resumen dinámico del almacén físico */}
-        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-500 pb-2">
+        <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-600 pb-2">
           <span>Unidades vendidas:</span>
-          <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md">
+          <span className="font-mono font-semibold text-slate-900 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
             {counts.itemsVendidos} u.
           </span>
         </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* 2. ENCABEZADO DE GESTIÓN: BUSCADOR Y REGISTRAR PRODUCTO */}
-      {/* ======================================================== */}
-      <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4 bg-white">
-        <div className="relative w-full md:w-96">
-          <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
+      <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Buscar por Modelo, IMEI 1/2, N° Serie..."
+            placeholder="Buscar por Modelo, Marca, IMEI, Serie..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 transition-all shadow-2xs"
+            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button
+            type="button"
             onClick={onOpenCreateModal}
-            className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer ml-auto md:ml-0"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer shadow-xs"
           >
-            <FaPlus className="text-xs" /> Registrar Nuevo Celular / Producto
+            <Plus className="w-4 h-4" />
+            <span>Registrar Producto</span>
           </button>
         </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* 3. BARRA DE FILTRADO RÁPIDO POR CATEGORÍA */}
-      {/* ======================================================== */}
-      <div className="px-5 py-3 bg-slate-50/80 border-b border-slate-200/80 flex items-center gap-3 overflow-x-auto no-scrollbar">
-        <span className="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider mr-1 hidden sm:inline select-none">
+      <div className="px-4 py-2.5 bg-slate-50/70 border-b border-slate-200 flex items-center gap-2 overflow-x-auto">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mr-1 hidden sm:inline">
           Categoría:
         </span>
         {categoryTabs.map((tab) => {
           const count = getCategoryCount(tab.id);
           const isSelected = selectedCategory === tab.id;
-          const TabIcon = tab.Icon;
+          const IconComp = tab.Icon;
 
           return (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setSelectedCategory(tab.id)}
-              className={`group flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors cursor-pointer whitespace-nowrap ${
                 isSelected
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-transparent shadow-md shadow-purple-500/20'
-                  : 'bg-slate-100/80 hover:bg-slate-200/70 text-slate-600 hover:text-slate-900 border-slate-200/70'
+                  ? 'bg-slate-900 text-white border-slate-900'
+                  : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200 hover:border-slate-300'
               }`}
             >
-              <TabIcon
-                className={`w-3.5 h-3.5 transition-colors ${
-                  isSelected ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'
-                }`}
-              />
+              <IconComp className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
               <span
-                className={`px-2 py-0.5 text-xs font-mono font-bold rounded-full transition-all ${
-                  isSelected
-                    ? 'bg-white/20 text-white backdrop-blur-xs'
-                    : 'bg-slate-200/80 text-slate-700'
+                className={`px-1.5 py-0.2 text-[11px] font-mono rounded-md ${
+                  isSelected ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700'
                 }`}
               >
                 {count}
@@ -224,242 +251,216 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         })}
       </div>
 
-      {/* ======================================================== */}
-      {/* 4. TABLA PRINCIPAL DE HARDWARE Y CATÁLOGO */}
-      {/* ======================================================== */}
       <div className="w-full overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[700px]">
-          <thead className="bg-slate-900 text-slate-200 font-extrabold uppercase text-[11px] tracking-wider select-none">
+        <table className="w-full text-left border-collapse min-w-[760px]">
+          <thead className="bg-slate-100 text-slate-700 text-[11px] font-semibold uppercase tracking-wider border-b border-slate-200">
             <tr>
-              <th className="py-3 px-3 text-center w-10"></th>
-              <th className="py-3 px-3 text-center w-14">Imagen</th>
-              <th className="py-3 px-4">Modelo / Categoría</th>
-              <th className="py-3 px-4">Capacidad / Estado</th>
-              <th className="py-3 px-4 text-right">Precio (S/)</th>
-              <th className="py-3 px-3 text-center w-28">Stock Real</th>
-              <th className="py-3 px-4 text-center w-28">Visibilidad</th>
-              <th className="py-3 px-4 text-center w-28">Acciones</th>
+              <th className="py-2.5 px-3 text-center w-10"></th>
+              <th className="py-2.5 px-3 text-center w-14">Imagen</th>
+              <th className="py-2.5 px-4">Modelo / Categoría</th>
+              <th className="py-2.5 px-4">Capacidad / Estado</th>
+              <th className="py-2.5 px-4 text-right">Precio (S/)</th>
+              <th className="py-2.5 px-3 text-center w-36">Stock</th>
+              <th className="py-2.5 px-4 text-center w-28">Visibilidad</th>
+              <th className="py-2.5 px-4 text-center w-24">Acciones</th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-slate-100 text-xs">
             {filteredItems.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-14 text-slate-400 font-medium">
+                <td colSpan={8} className="text-center py-12 text-slate-500 font-medium">
                   <div className="flex flex-col items-center gap-2">
-                    <FaBox className="text-3xl text-slate-300" />
-                    <p className="text-sm font-semibold text-slate-600">
+                    <Smartphone className="w-8 h-8 text-slate-300" />
+                    <p className="text-sm font-semibold text-slate-700">
                       {stockTab === 'agotados'
                         ? `No hay productos agotados en la categoría "${selectedCategory}".`
-                        : `No se encontraron productos en stock en la categoría "${selectedCategory}".`}
+                        : `No se encontraron productos en stock para "${selectedCategory}".`}
                     </p>
                     <p className="text-xs text-slate-400">
                       {stockTab === 'agotados'
-                        ? 'Cuando un equipo venda su última unidad física, pasará automáticamente a este historial.'
-                        : 'Puedes registrar nuevos equipos haciendo clic en "+ Registrar Nuevo Celular".'}
+                        ? 'Las unidades vendidas pasarán automáticamente a esta vista al llegar a 0 de stock disponible.'
+                        : 'Puedes registrar nuevos equipos con el botón superior.'}
                     </p>
                   </div>
                 </td>
               </tr>
             ) : (
               filteredItems.map((item) => {
-                const isExpanded = !!expandedRows[item.id];
+                const isExpanded = Boolean(expandedRows[item.id]);
                 const isInactive = item.activo === false;
-
-                // CÁLCULO ESTRICTO DE STOCK REAL EFECTIVO:
-                // Si tiene unidades celulares registradas, el stock es EXCLUSIVAMENTE el conteo de unidades 'Disponible'.
-                const realStock = (item.itemsCelulares && Array.isArray(item.itemsCelulares) && item.itemsCelulares.length > 0)
-                  ? item.itemsCelulares.filter(u => u.estadoDispositivo === 'Disponible').length
-                  : (item.stock || 0);
-
-                const isAgotado = realStock === 0;
+                const isAgotado = item.stockDisponibleReal === 0;
 
                 return (
                   <React.Fragment key={item.id}>
-                    {/* Fila del Producto Padre */}
                     <tr
                       className={`group transition-colors ${
                         isAgotado
-                          ? 'bg-rose-50/25 hover:bg-rose-50/45'
+                          ? 'bg-red-50/20 hover:bg-red-50/40'
                           : isInactive
-                          ? 'bg-slate-50/80 opacity-70'
-                          : 'hover:bg-slate-50/90'
+                          ? 'bg-slate-50 opacity-70'
+                          : 'hover:bg-slate-50'
                       }`}
                     >
-                      {/* Botón Expandir Detalles Físicos */}
                       <td className="py-3 px-3 text-center">
                         <button
+                          type="button"
                           onClick={() => toggleRow(item.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all cursor-pointer"
-                          title={isExpanded ? 'Ocultar detalles técnicos' : 'Ver IMEI, N° Serie y hardware físico'}
+                          className="p-1 rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                          title={isExpanded ? 'Ocultar unidades' : 'Ver unidades registradas'}
                         >
                           {isExpanded ? (
-                            <FaChevronUp className="text-purple-600 text-xs" />
+                            <ChevronUp className="w-4 h-4 text-slate-700" />
                           ) : (
-                            <FaChevronDown className="text-xs group-hover:scale-110" />
+                            <ChevronDown className="w-4 h-4" />
                           )}
                         </button>
                       </td>
 
-                      {/* Miniatura */}
                       <td className="py-3 px-3 text-center">
                         {item.imagenUrl ? (
                           <img
                             src={item.imagenUrl}
                             alt={item.modelo}
-                            className={`w-10 h-10 object-contain rounded-lg border border-slate-200 bg-white p-1 mx-auto shadow-2xs ${
-                              isAgotado ? 'grayscale-50 opacity-75' : ''
+                            className={`w-10 h-10 object-contain rounded-md border border-slate-200 bg-white p-1 mx-auto ${
+                              isAgotado ? 'opacity-60' : ''
                             }`}
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center text-slate-400 mx-auto">
-                            <FaImage className="text-sm" />
+                          <div className="w-10 h-10 rounded-md border border-slate-200 bg-slate-100 flex items-center justify-center text-slate-400 mx-auto">
+                            <ImageIcon className="w-4 h-4" />
                           </div>
                         )}
                       </td>
 
-                      {/* Modelo y Categoría */}
                       <td className="py-3 px-4">
                         <div className="flex flex-col">
-                          <span className="font-extrabold text-slate-900 text-sm line-clamp-1">
+                          <span className="font-semibold text-slate-900 text-sm line-clamp-1">
                             {item.modelo}
                           </span>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/60">
+                            <span className="text-[10px] font-medium text-slate-700 bg-slate-100 border border-slate-200 rounded-md px-1.5 py-0.5">
                               {item.categoriaNombre || 'Celulares'}
                             </span>
-                            <span className="text-[11px] text-slate-500 font-medium">
-                              {item.color}
-                            </span>
+                            <span className="text-slate-500 text-[11px]">{item.color}</span>
                           </div>
                         </div>
                       </td>
 
-                      {/* Capacidad y Condición */}
                       <td className="py-3 px-4">
                         <div className="flex flex-col gap-1">
-                          <span className="font-semibold text-slate-700">
+                          <span className="font-medium text-slate-800">
                             {item.almacenamiento} • RAM {item.ram || '8GB'}
                           </span>
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                item.estado === 'Nuevo / Sellado'
-                                  ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                                  : item.estado === 'Open Box'
-                                  ? 'text-cyan-800 bg-cyan-50 border-cyan-200'
-                                  : 'text-amber-800 bg-amber-50 border-amber-200'
-                              }`}
-                            >
-                              <FaCheckCircle className="text-[9px]" /> {item.estado}
-                            </span>
-                            {item.bateria && item.estado !== 'Nuevo / Sellado' && item.estado !== 'N/A (No aplica)' && (
-                              <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                                <FaBatteryFull className="text-emerald-600 text-[10px]" /> {item.bateria}
-                              </span>
-                            )}
+                            {renderBadgeEstadoProducto(item.estado)}
+                            {item.bateria &&
+                              item.estado !== 'Nuevo / Sellado' &&
+                              item.estado !== 'N/A (No aplica)' && (
+                                <span className="text-[11px] text-slate-500 font-medium inline-flex items-center gap-1">
+                                  <Battery className="w-3.5 h-3.5 text-slate-400" />
+                                  {item.bateria}
+                                </span>
+                              )}
                           </div>
                         </div>
                       </td>
 
-                      {/* Precio */}
-                      <td className="py-3 px-4 text-right font-mono font-black text-slate-900 text-sm">
+                      <td className="py-3 px-4 text-right font-mono font-semibold text-slate-900 text-sm">
                         S/ {(item.precio || 0).toFixed(2)}
                       </td>
 
-                      {/* STOCK REAL NETO */}
-                      <td className="py-3 px-3 text-center">
-                        <span
-                          className={`inline-block font-extrabold px-2.5 py-1 rounded-lg border text-xs font-mono ${
-                            isAgotado
-                              ? 'bg-rose-50 text-rose-700 border-rose-200'
-                              : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                          }`}
-                        >
-                          {isAgotado ? '0 u. (Agotado)' : `${realStock} u.`}
-                        </span>
-                      </td>
+                      <td className="py-3 px-3 text-center">{renderBadgeStock(item)}</td>
 
-                      {/* Visibilidad Pública */}
                       <td className="py-3 px-4 text-center">
                         <button
+                          type="button"
                           onClick={() => onToggleVisibility(item)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold transition-all cursor-pointer border ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
                             item.activo !== false
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                              : 'bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300'
+                              : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
                           }`}
-                          title={item.activo !== false ? 'Visible en tienda' : 'Oculto en tienda'}
+                          title={item.activo !== false ? 'Ocultar en catálogo' : 'Publicar en catálogo'}
                         >
                           {item.activo !== false ? (
-                            <><FaEye className="text-emerald-600 text-xs" /> Publicado</>
+                            <>
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Publicado</span>
+                            </>
                           ) : (
-                            <><FaEyeSlash className="text-slate-500 text-xs" /> Oculto</>
+                            <>
+                              <EyeOff className="w-3.5 h-3.5" />
+                              <span>Oculto</span>
+                            </>
                           )}
                         </button>
                       </td>
 
-                      {/* Acciones */}
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-1">
                           <button
+                            type="button"
                             onClick={() => onOpenEditModal(item)}
-                            className="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-xl transition-all cursor-pointer"
-                            title="Editar Producto Padre"
+                            className="text-slate-600 hover:text-slate-900 p-1.5 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                            title="Editar datos del producto"
                           >
-                            <FaEdit className="text-sm" />
+                            <Pencil className="w-4 h-4" />
                           </button>
                           <button
+                            type="button"
                             onClick={() => handleDelete(item.id)}
-                            className="text-rose-600 hover:text-rose-800 p-2 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
-                            title="Eliminar Producto Padre"
+                            className="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
+                            title="Eliminar producto"
                           >
-                            <FaTrashAlt className="text-sm" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
                     </tr>
 
-                    {/* Fila Expandible: Unidades Físicas Registradas */}
                     {isExpanded && (
-                      <tr className="bg-purple-50/40 border-b border-purple-100">
+                      <tr className="bg-slate-50/70 border-b border-slate-200">
                         <td colSpan={8} className="p-4 pl-12 space-y-3">
                           {item.itemsCelulares && item.itemsCelulares.length > 0 ? (
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-extrabold uppercase text-purple-900 tracking-wider">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-700">
                                   Unidades Físicas Registradas ({item.itemsCelulares.length})
                                 </span>
-                                <span className="text-[11px] text-purple-700 font-semibold">
-                                  Acciones directas sincronizan el stock en 0ms
+                                <span className="text-[11px] text-slate-500">
+                                  El stock se recalcula y sincroniza automáticamente
                                 </span>
                               </div>
 
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {item.itemsCelulares.map((unit, uIdx) => {
-                                  const isSold = unit.estadoDispositivo === 'Vendido';
+                                  const isSold =
+                                    (unit.estadoDispositivo ?? '').toUpperCase() === 'VENDIDO';
+                                  const isReserved =
+                                    (unit.estadoDispositivo ?? '').toUpperCase() === 'RESERVADO';
                                   const isLoadingUnit = actionLoadingUnitId === unit.id;
 
                                   return (
                                     <div
-                                      key={unit.id || uIdx}
-                                      className={`p-3 rounded-xl border transition-all space-y-2 ${
+                                      key={unit.id ?? uIdx}
+                                      className={`p-3 rounded-md border transition-colors space-y-2 ${
                                         isSold
-                                          ? 'bg-slate-50 border-slate-200 opacity-80'
-                                          : 'bg-white border-purple-100 shadow-2xs'
+                                          ? 'bg-slate-50 border-slate-200 text-slate-600'
+                                          : 'bg-white border-slate-200 shadow-2xs'
                                       }`}
                                     >
                                       <div className="flex items-center justify-between text-xs">
-                                        <span className="font-bold text-slate-800">
+                                        <span className="font-semibold text-slate-800">
                                           Unidad #{uIdx + 1}
                                         </span>
                                         <span
-                                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                          className={`text-[11px] px-2 py-0.5 rounded-md font-medium border ${
                                             isSold
-                                              ? 'bg-rose-100 text-rose-700'
-                                              : unit.estadoDispositivo === 'Reservado'
-                                              ? 'bg-amber-100 text-amber-700'
-                                              : 'bg-emerald-100 text-emerald-700'
+                                              ? 'bg-red-50 text-red-700 border-red-200'
+                                              : isReserved
+                                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                           }`}
                                         >
                                           {unit.estadoDispositivo || 'Disponible'}
@@ -467,31 +468,49 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                                       </div>
 
                                       <div className="text-[11px] font-mono text-slate-700 space-y-0.5">
-                                        <p><strong className="text-slate-400 font-sans">IMEI 1:</strong> {unit.imei1}</p>
-                                        {unit.imei2 && <p><strong className="text-slate-400 font-sans">IMEI 2:</strong> {unit.imei2}</p>}
-                                        {unit.numeroSerial && <p><strong className="text-slate-400 font-sans">SN:</strong> {unit.numeroSerial}</p>}
-                                        {unit.bateria && <p><strong className="text-slate-400 font-sans">Batería:</strong> {unit.bateria}</p>}
+                                        <p>
+                                          <strong className="text-slate-400 font-sans">IMEI 1:</strong>{' '}
+                                          {unit.imei1}
+                                        </p>
+                                        {unit.imei2 && (
+                                          <p>
+                                            <strong className="text-slate-400 font-sans">IMEI 2:</strong>{' '}
+                                            {unit.imei2}
+                                          </p>
+                                        )}
+                                        {unit.numeroSerial && (
+                                          <p>
+                                            <strong className="text-slate-400 font-sans">SN:</strong>{' '}
+                                            {unit.numeroSerial}
+                                          </p>
+                                        )}
+                                        {unit.bateria && (
+                                          <p>
+                                            <strong className="text-slate-400 font-sans">Batería:</strong>{' '}
+                                            {unit.bateria}
+                                          </p>
+                                        )}
                                         {unit.fechaVenta && (
                                           <p className="text-[10px] text-slate-500 font-sans">
-                                            <strong>Vendido:</strong> {new Date(unit.fechaVenta).toLocaleDateString('es-PE')}
+                                            <strong>Vendido:</strong>{' '}
+                                            {new Date(unit.fechaVenta).toLocaleDateString('es-PE')}
                                           </p>
                                         )}
                                       </div>
 
-                                      {/* Acciones Inmediatas de Caja */}
-                                      <div className="pt-1.5 border-t border-slate-100 flex items-center justify-end">
+                                      <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
                                         {isSold ? (
                                           <button
                                             type="button"
                                             disabled={isLoadingUnit}
                                             onClick={() => handleRetornarStock(item.id, unit.id)}
-                                            className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                                            title="Retornar esta unidad vendida a Stock Disponible"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                                            title="Reingresar esta unidad vendida a Stock Disponible"
                                           >
                                             {isLoadingUnit ? (
-                                              <FaSpinner className="animate-spin text-xs" />
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                             ) : (
-                                              <FaUndoAlt className="text-xs" />
+                                              <RotateCcw className="w-3.5 h-3.5" />
                                             )}
                                             <span>Reingresar a Stock</span>
                                           </button>
@@ -500,13 +519,13 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                                             type="button"
                                             disabled={isLoadingUnit}
                                             onClick={() => handleMarcarVendido(item.id, unit.id)}
-                                            className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                                            title="Registrar venta de esta unidad física en la caja de la tienda"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                                            title="Registrar venta de esta unidad física"
                                           >
                                             {isLoadingUnit ? (
-                                              <FaSpinner className="animate-spin text-xs" />
+                                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                             ) : (
-                                              <FaShoppingCart className="text-xs" />
+                                              <ShoppingCart className="w-3.5 h-3.5" />
                                             )}
                                             <span>Vender Unidad</span>
                                           </button>
@@ -518,53 +537,47 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                               </div>
                             </div>
                           ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-xl border border-purple-100 shadow-2xs">
-                              <div className="flex items-start gap-2.5">
-                                <div className="p-2 rounded-lg bg-purple-100 text-purple-700 mt-0.5">
-                                  <FaBarcode className="text-xs" />
-                                </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-white p-3.5 rounded-md border border-slate-200">
+                              <div className="flex items-start gap-2">
+                                <Barcode className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                                 <div>
-                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                    IMEI Principal (1)
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    IMEI Principal
                                   </span>
-                                  <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
-                                    {item.imei || item.imei1 || 'N/A (No aplica)'}
+                                  <p className="font-mono text-xs font-semibold text-slate-800 mt-0.5">
+                                    {item.imei || item.imei1 || 'N/A'}
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex items-start gap-2.5">
-                                <div className="p-2 rounded-lg bg-blue-100 text-blue-700 mt-0.5">
-                                  <FaFingerprint className="text-xs" />
-                                </div>
+                              <div className="flex items-start gap-2">
+                                <Barcode className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                                 <div>
-                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                    IMEI Secundario (2)
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    IMEI Secundario
                                   </span>
-                                  <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
-                                    {item.imei2 || 'N/A (No aplica)'}
+                                  <p className="font-mono text-xs font-semibold text-slate-800 mt-0.5">
+                                    {item.imei2 || 'N/A'}
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex items-start gap-2.5">
-                                <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 mt-0.5">
-                                  <FaHashtag className="text-xs" />
-                                </div>
+                              <div className="flex items-start gap-2">
+                                <Hash className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                                 <div>
-                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                    N° de Serie (SN)
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    N° de Serie
                                   </span>
-                                  <p className="font-mono text-xs font-bold text-slate-900 mt-0.5">
-                                    {item.numeroSerie || item.numeroSerial || 'N/A (No aplica)'}
+                                  <p className="font-mono text-xs font-semibold text-slate-800 mt-0.5">
+                                    {item.numeroSerie || item.numeroSerial || 'N/A'}
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex items-start gap-2.5 sm:col-span-2 md:col-span-1">
+                              <div className="flex items-start gap-2 sm:col-span-2 md:col-span-1">
                                 <div>
-                                  <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                                    Descripción / Notas
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Descripción
                                   </span>
                                   <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">
                                     {item.descripcion || 'Sin descripción adicional.'}
