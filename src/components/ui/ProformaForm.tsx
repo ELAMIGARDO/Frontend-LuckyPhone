@@ -272,23 +272,47 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
         </div>
 
         {/* TIEMPO DE GARANTÍA */}
-        <div>
-          <label className="block text-[11px] font-bold text-slate-700 mb-1">Cobertura de Garantía</label>
-          <div className="grid grid-cols-5 gap-1.5">
-            {opcionesGarantia.map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => onChange('duracionGarantia', opt)}
-                className={`py-2 px-1 text-[11px] font-bold rounded-xl border transition-all cursor-pointer ${
-                  data.duracionGarantia === opt
-                    ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {opt}
-              </button>
-            ))}
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center">
+            <label className="block text-[11px] font-bold text-slate-700">
+              Cobertura de Garantía <span className="text-purple-600 font-extrabold font-mono">({parseInt(data.duracionGarantia, 10) || 0} Meses)</span>
+            </label>
+            <span className="text-[10px] text-slate-400 font-medium">Por defecto: 0 (Manual)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative w-28">
+              <input
+                type="number"
+                min={0}
+                max={60}
+                value={parseInt(data.duracionGarantia, 10) || 0}
+                onChange={(e) => {
+                  const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+                  onChange('duracionGarantia', `${val} Meses`);
+                }}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-black font-mono focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 bg-white"
+                placeholder="0"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none">
+                Meses
+              </span>
+            </div>
+            <div className="flex-1 grid grid-cols-5 gap-1">
+              {opcionesGarantia.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => onChange('duracionGarantia', opt)}
+                  className={`py-2 px-1 text-[10px] font-bold rounded-xl border transition-all cursor-pointer text-center ${
+                    data.duracionGarantia === opt
+                      ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

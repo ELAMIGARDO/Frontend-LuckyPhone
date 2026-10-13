@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   FaChartLine,
   FaMobileAlt,
@@ -18,14 +18,12 @@ import { MetricsOverview } from '../components/admin/MetricsOverview';
 import { WarrantiesTable } from '../components/admin/WarrantiesTable';
 import { SettingsPage } from './SettingsPage';
 import { FaSlidersH } from 'react-icons/fa';
+import { useInventoryContext } from '../context/InventoryContext';
 import {
   crearProductoService,
   actualizarProductoService,
   cambiarEstadoProductoService,
-  guardarProductoLocalService,
-  eliminarProductoLocalService,
-  eliminarProductoService,
-  getProductosAdminListaCompletaService
+  guardarProductoLocalService
 } from '../services/backendService';
 import type { TabType, InventoryItem } from '../interfaces/luckyPhoneTypes';
 
@@ -42,85 +40,12 @@ export const AdminDashboardPage: React.FC = () => {
   const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const [inventory, setInventory] = useState<InventoryItem[]>(() => {
-    try {
-      const stored = localStorage.getItem('luckyphone_admin_products');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          return parsed.map((item: any) => ({
-            id: String(item.id),
-            modelo: item.modelo || item.nombre || 'Producto',
-            marca: item.marca || 'Apple',
-            almacenamiento: item.almacenamiento || '256GB',
-            ram: item.ram || '8GB',
-            color: item.color || 'Estándar',
-            precio: item.precio || 0,
-            stock: item.stock || 1,
-            imei: item.imei || item.imei1 || '',
-            imei1: item.imei1 || item.imei || '',
-            imei2: item.imei2 || '',
-            numeroSerie: item.numeroSerie || item.numeroSerial || '',
-            numeroSerial: item.numeroSerial || item.numeroSerie || '',
-            categoriaNombre: item.categoriaNombre || 'Celulares',
-            estado: item.estado || 'Nuevo / Sellado',
-            bateria: item.bateria || '100%',
-            imagenUrl: item.imagenUrl || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80',
-            descripcion: item.descripcion || '',
-            activo: item.activo !== undefined ? item.activo : true
-          }));
-        }
-      }
-    } catch (e) {
-      console.error("Error al cargar inventario local:", e);
-    }
-    return [];
-  });
-
-  const cargarInventarioBD = async () => {
-    try {
-      const productosBD = await getProductosAdminListaCompletaService();
-      if (productosBD && Array.isArray(productosBD)) {
-        const adaptados: InventoryItem[] = productosBD.map((item: any) => {
-          const firstItem = item.itemsCelulares && item.itemsCelulares[0];
-          const imei1Val = item.imei1 || (firstItem ? firstItem.imei1 : '');
-          const imei2Val = item.imei2 || (firstItem ? firstItem.imei2 : '');
-          const snVal = item.numeroSerial || (firstItem ? firstItem.numeroSerial : '');
-          const batVal = item.bateria || (firstItem ? firstItem.bateria : '100%');
-
-          return {
-            id: String(item.id),
-            modelo: item.modelo || item.nombre || 'Producto',
-            marca: item.marca || 'Apple',
-            almacenamiento: item.almacenamiento || '256GB',
-            ram: item.ram || '8GB',
-            color: item.color || 'Estándar',
-            precio: item.precio || 0,
-            stock: item.stock !== undefined ? item.stock : 1,
-            imei: imei1Val,
-            imei1: imei1Val,
-            imei2: imei2Val,
-            numeroSerie: snVal,
-            numeroSerial: snVal,
-            categoriaNombre: item.categoriaNombre || 'Celulares',
-            estado: item.estado || 'Nuevo / Sellado',
-            bateria: batVal,
-            imagenUrl: item.imagenUrl || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80',
-            descripcion: item.descripcion || '',
-            activo: item.activo !== undefined ? item.activo : true,
-            itemsCelulares: item.itemsCelulares || []
-          };
-        });
-        setInventory(adaptados);
-      }
-    } catch (e) {
-      console.error("Error al sincronizar inventario con BD MySQL:", e);
-    }
-  };
-
-  useEffect(() => {
-    cargarInventarioBD();
-  }, []);
+  const {
+    inventory,
+    refreshInventory,
+    eliminarProductoOptimista,
+    actualizarProductoEnEstado
+  } = useInventoryContext();
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -220,7 +145,7 @@ export const AdminDashboardPage: React.FC = () => {
     const updatedStatus = item.activo === false ? true : false;
     const updatedItem = { ...item, activo: updatedStatus };
 
-    setInventory(prev => prev.map(p => p.id === item.id ? updatedItem : p));
+    actualizarProductoEnEstado(updatedItem);
 
     guardarProductoLocalService({
       id: item.id,
@@ -247,7 +172,7 @@ export const AdminDashboardPage: React.FC = () => {
     if (!isNaN(numId)) {
       try {
         await cambiarEstadoProductoService(numId);
-        await cargarInventarioBD();
+        await refreshInventory();
       } catch (error) {
         console.warn("No se pudo actualizar estado en Spring Boot:", error);
       }
@@ -349,11 +274,12 @@ export const AdminDashboardPage: React.FC = () => {
       } else {
         await crearProductoService(productDataToSync);
       }
-      await cargarInventarioBD();
+      await refreshInventory();
     } catch (error: any) {
       console.error("Error al guardar producto en Spring Boot:", error);
       alert("Atención: Hubo un problema guardando el producto en la base de datos: " + (error?.response?.data?.message || error?.message || 'Error del servidor'));
       guardarProductoLocalService(productDataToSync);
+      await refreshInventory();
     }
 
     setIsModalOpen(false);
@@ -361,17 +287,7 @@ export const AdminDashboardPage: React.FC = () => {
 
   const handleDeleteDevice = async (id: string) => {
     if (window.confirm('¿Estás seguro de eliminar este celular del inventario? Esta acción actualizará el catálogo principal.')) {
-      setInventory(prev => prev.filter(item => item.id !== id));
-      eliminarProductoLocalService(id);
-      const numId = Number(id);
-      if (!isNaN(numId)) {
-        try {
-          await eliminarProductoService(numId);
-          await cargarInventarioBD();
-        } catch (error) {
-          console.warn("Error eliminando en backend:", error);
-        }
-      }
+      await eliminarProductoOptimista(id);
     }
   };
 
@@ -426,7 +342,7 @@ export const AdminDashboardPage: React.FC = () => {
               <span className="text-xs font-bold text-slate-700">Servidor en Línea</span>
             </div>
             <button
-              onClick={() => { setSearchTerm(''); cargarInventarioBD(); }}
+              onClick={() => { setSearchTerm(''); refreshInventory(); }}
               className="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2.5 rounded-xl transition-colors"
               title="Sincronizar y restablecer filtros"
             >

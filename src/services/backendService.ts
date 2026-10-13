@@ -284,3 +284,109 @@ export const getAtributosConfigService = async () => {
     return defaults;
   }
 };
+
+// ==========================================
+// SERVICIOS PARA METRICAS GLOBALES Y CONTEOS
+// ==========================================
+
+export interface MetricsCounts {
+  disponibles: number;
+  agotados: number;
+  anulados: number;
+  vigentes: number;
+  caducados: number;
+  totales: number;
+  totalProductos: number;
+  itemsVendidos: number;
+  itemsDisponibles: number;
+}
+
+export const getMetricsCountsService = async (): Promise<MetricsCounts> => {
+  try {
+    const { data } = await luckyphoneApi.get<MetricsCounts>('/admin/metrics/counts');
+    return data;
+  } catch (error) {
+    console.warn("No se pudo conectar con /admin/metrics/counts, calculando desde almacenamiento local...", error);
+    const localProducts: any[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY) || '[]');
+    const localGarantias: any[] = JSON.parse(localStorage.getItem('luckyphone_garantias_local') || '[]');
+
+    const disponibles = localProducts.filter(p => (p.stock || 0) > 0).length;
+    const agotados = localProducts.filter(p => (p.stock || 0) === 0).length;
+    const anulados = localGarantias.filter(g => !!g.eliminadoAt).length;
+    const vigentes = localGarantias.filter(g => !g.eliminadoAt && (g.diasRestantes || 0) > 0).length;
+    const caducados = localGarantias.filter(g => !g.eliminadoAt && (g.diasRestantes || 0) <= 0).length;
+    const totales = localGarantias.filter(g => !g.eliminadoAt).length;
+
+    return {
+      disponibles,
+      agotados,
+      anulados,
+      vigentes,
+      caducados,
+      totales,
+      totalProductos: localProducts.length,
+      itemsVendidos: 0,
+      itemsDisponibles: disponibles
+    };
+  }
+};
+
+export const actualizarEstadoItemCelularService = async (id: number, estado: 'Disponible' | 'Reservado' | 'Vendido') => {
+  const { data } = await luckyphoneApi.put(`/items-celulares/${id}/estado`, null, {
+    params: { estado }
+  });
+  return data;
+};
+
+// ==========================================
+// SERVICIOS PARA REPORTES EXCEL Y PDF (BACKEND)
+// ==========================================
+
+export const descargarReporteExcelService = async (categoria: string = 'TODOS', periodo: string = 'todos') => {
+  const response = await luckyphoneApi.get('/reportes/excel', {
+    params: { categoria, periodo },
+    responseType: 'blob'
+  });
+  const blob = new Blob([response.data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `luckyphone_rotacion_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+export const descargarReportePdfService = async (categoria: string = 'TODOS', periodo: string = 'todos') => {
+  const response = await luckyphoneApi.get('/reportes/pdf', {
+    params: { categoria, periodo },
+    responseType: 'blob'
+  });
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `luckyphone_auditoria_contable_${new Date().toISOString().slice(0, 10)}.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
+export const descargarBackupSqlService = async () => {
+  const response = await luckyphoneApi.get('/backup/export-sql', {
+    responseType: 'blob'
+  });
+  const blob = new Blob([response.data], { type: 'application/sql' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `luckyphone_dump_mysql_${new Date().toISOString().slice(0, 10)}.sql`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};

@@ -10,6 +10,7 @@ import {
   FaCog
 } from 'react-icons/fa';
 import type { TabType } from '../../interfaces/luckyPhoneTypes';
+import { useInventoryContext } from '../../context/InventoryContext';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -24,11 +25,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpenMobile,
   setIsOpenMobile 
 }) => {
+  const { counts } = useInventoryContext();
+
   const menuItems = [
     { id: 'metrics' as TabType, label: 'Métricas', icon: FaChartPie },
-    { id: 'inventory' as TabType, label: 'Inventario de Celulares', icon: FaMobileAlt },
+    { id: 'inventory' as TabType, label: 'Inventario de Celulares', icon: FaMobileAlt, badge: counts.disponibles, badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
     { id: 'proforma' as TabType, label: 'Emitir Proforma', icon: FaFileInvoiceDollar },
-    { id: 'warranties' as TabType, label: 'Control de Garantías', icon: FaShieldAlt },
+    { id: 'warranties' as TabType, label: 'Control de Garantías', icon: FaShieldAlt, badge: counts.vigentes, badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
     { id: 'reviews' as TabType, label: 'Reseñas de Clientes', icon: FaStar },
     { id: 'settings' as TabType, label: 'Ajustes del Sistema', icon: FaCog },
   ];
@@ -65,16 +68,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   if (setIsOpenMobile) setIsOpenMobile(false);
                 }}
                 className={`
-                  w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 text-left group relative overflow-hidden
+                  w-full flex items-center justify-between px-4 py-3.5 rounded-xl font-bold text-sm transition-all duration-200 text-left group relative overflow-hidden
                   ${isActive 
                     ? 'bg-purple-600/20 text-purple-400 border-l-4 border-purple-500 shadow-md shadow-purple-950/40' 
                     : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80'}
                 `}
               >
-                <Icon className={`text-lg transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-purple-400' : 'text-slate-400 group-hover:text-purple-400'}`} />
-                <span>{item.label}</span>
-                {isActive && (
-                  <span className="absolute right-3 w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                <div className="flex items-center gap-3.5">
+                  <Icon className={`text-lg transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-purple-400' : 'text-slate-400 group-hover:text-purple-400'}`} />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge !== undefined && (
+                  <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-full border shadow-2xs ${item.badgeColor}`}>
+                    {item.badge}
+                  </span>
                 )}
               </button>
             );

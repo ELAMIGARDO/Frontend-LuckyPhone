@@ -35,7 +35,7 @@ export const useProforma = () => {
     precioBase: 0,
     descuentoTipo: 'soles',
     descuentoValor: 0,
-    duracionGarantia: '12 Meses',
+    duracionGarantia: '0 Meses',
   });
 
   const [isSaving, setIsSaving] = useState<boolean>(false);

@@ -1,8 +1,8 @@
 import type { InventoryItem } from '../interfaces/luckyPhoneTypes';
 
 export const exportarInventarioExcel = (items: InventoryItem[], categoriaSeleccionada: string = 'TODOS') => {
-  const filtered = categoriaSeleccionada === 'TODOS' 
-    ? items 
+  const filtered = categoriaSeleccionada === 'TODOS'
+    ? items
     : items.filter(i => i.categoriaNombre?.toLowerCase().includes(categoriaSeleccionada.toLowerCase()));
 
   const rows: string[][] = [];
@@ -27,15 +27,15 @@ export const exportarInventarioExcel = (items: InventoryItem[], categoriaSelecci
     ]);
 
     filtered.forEach(p => {
-      const itemsList = p.itemsCelulares && p.itemsCelulares.length > 0 
-        ? p.itemsCelulares 
+      const itemsList = p.itemsCelulares && p.itemsCelulares.length > 0
+        ? p.itemsCelulares
         : [{
-            imei1: p.imei || p.imei1 || '',
-            imei2: p.imei2 || '',
-            numeroSerial: p.numeroSerie || p.numeroSerial || '',
-            bateria: p.bateria || '100%',
-            estadoDispositivo: 'Disponible' as const
-          }];
+          imei1: p.imei || p.imei1 || '',
+          imei2: p.imei2 || '',
+          numeroSerial: p.numeroSerie || p.numeroSerial || '',
+          bateria: p.bateria || '100%',
+          estadoDispositivo: 'Disponible' as const
+        }];
 
       itemsList.forEach(item => {
         rows.push([
@@ -95,8 +95,8 @@ export const exportarInventarioExcel = (items: InventoryItem[], categoriaSelecci
 };
 
 export const exportarInventarioPDF = (items: InventoryItem[], categoriaSeleccionada: string = 'TODOS') => {
-  const filtered = categoriaSeleccionada === 'TODOS' 
-    ? items 
+  const filtered = categoriaSeleccionada === 'TODOS'
+    ? items
     : items.filter(i => i.categoriaNombre?.toLowerCase().includes(categoriaSeleccionada.toLowerCase()));
 
   const fechaHora = new Date().toLocaleString('es-PE', {
@@ -115,15 +115,15 @@ export const exportarInventarioPDF = (items: InventoryItem[], categoriaSeleccion
   if (categoriaSeleccionada === 'Celulares' || categoriaSeleccionada === 'TODOS') {
     let correlativo = 1;
     filtered.forEach((p) => {
-      const itemsList = p.itemsCelulares && p.itemsCelulares.length > 0 
-        ? p.itemsCelulares 
+      const itemsList = p.itemsCelulares && p.itemsCelulares.length > 0
+        ? p.itemsCelulares
         : [{
-            imei1: p.imei || p.imei1 || '',
-            imei2: p.imei2 || '',
-            numeroSerial: p.numeroSerie || p.numeroSerial || '',
-            bateria: p.bateria || '100%',
-            estadoDispositivo: 'Disponible'
-          }];
+          imei1: p.imei || p.imei1 || '',
+          imei2: p.imei2 || '',
+          numeroSerial: p.numeroSerie || p.numeroSerial || '',
+          bateria: p.bateria || '100%',
+          estadoDispositivo: 'Disponible'
+        }];
 
       itemsList.forEach((it) => {
         tableRowsHtml += `

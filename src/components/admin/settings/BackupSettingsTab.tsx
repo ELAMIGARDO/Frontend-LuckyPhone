@@ -1,8 +1,16 @@
 import React from 'react';
 import { FaDatabase, FaDownload } from 'react-icons/fa';
+import { descargarBackupSqlService } from '../../../services/backendService';
 
 export const BackupSettingsTab: React.FC = () => {
-  const handleDescargarBackup = () => {
+  const handleDescargarBackup = async () => {
+    try {
+      await descargarBackupSqlService();
+      return;
+    } catch (e) {
+      console.warn("Backend dump no disponible, generando dump cliente...", e);
+    }
+
     const alms = JSON.parse(localStorage.getItem('luckyphone_atributos_config') || '{}').almacenamientos || [];
     const rams = JSON.parse(localStorage.getItem('luckyphone_atributos_config') || '{}').memoriasRam || [];
     const cols = JSON.parse(localStorage.getItem('luckyphone_atributos_config') || '{}').colores || [];

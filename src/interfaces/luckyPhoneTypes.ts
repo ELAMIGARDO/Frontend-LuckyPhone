@@ -107,6 +107,7 @@ export interface InventoryItem {
     numeroSerial?: string;
     bateria?: string;
     estadoDispositivo?: 'Disponible' | 'Reservado' | 'Vendido';
+    fechaVenta?: string;
   }>;
 }
 

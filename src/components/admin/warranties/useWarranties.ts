@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { luckyphoneApi } from '../../../api/luckyphoneApi';
+import { useInventoryContext } from '../../../context/InventoryContext';
 
 export interface Garantia {
   id: string;
@@ -24,6 +25,8 @@ export interface Garantia {
 }
 
 export const useWarranties = () => {
+  const { counts, anularGarantiaOptimista, restaurarGarantiaOptimista } = useInventoryContext();
+
   const [garantias, setGarantias] = useState<Garantia[]>(() => {
     const localSaved = localStorage.getItem('luckyphone_garantias_local');
     if (localSaved) {
@@ -95,10 +98,11 @@ export const useWarranties = () => {
       });
   }, [activeTab, searchTerm]);
 
-  const countTotales = garantias.filter(g => !g.eliminadoAt).length;
-  const countVigentes = garantias.filter(g => !g.eliminadoAt && g.diasRestantes > 0).length;
-  const countCaducados = garantias.filter(g => !g.eliminadoAt && g.diasRestantes <= 0).length;
-  const countAnulados = garantias.filter(g => g.eliminadoAt).length;
+  // Sincronización robusta: utilizar los conteos globales que persisten a través de los tabs
+  const countTotales = counts.totales || garantias.filter(g => !g.eliminadoAt).length;
+  const countVigentes = counts.vigentes || garantias.filter(g => !g.eliminadoAt && g.diasRestantes > 0).length;
+  const countCaducados = counts.caducados || garantias.filter(g => !g.eliminadoAt && g.diasRestantes <= 0).length;
+  const countAnulados = counts.anulados || garantias.filter(g => !!g.eliminadoAt).length;
 
   const listadoFiltrado = garantias.filter(g => {
     if (activeTab === 'anulados') {
@@ -151,19 +155,19 @@ export const useWarranties = () => {
   };
 
   const ejecutarAnulacion = async (id: string) => {
+    // 1. Mutación optimista inmediata del estado local y conteos
+    anularGarantiaOptimista(id);
+    setGarantias(prev => {
+      const updated = prev.map(item =>
+        item.id === id ? { ...item, eliminadoAt: new Date().toISOString(), estadoPago: 'ANULADO' as const } : item
+      );
+      localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
+      return updated;
+    });
+
     setLoading(true);
     try {
-      const response = await luckyphoneApi.delete(`/garantias/${id}`).catch(() => null);
-
-      if (!response || response.status === 200 || response.status === 204) {
-        setGarantias(prev => {
-          const updated = prev.map(item =>
-            item.id === id ? { ...item, eliminadoAt: new Date().toISOString(), estadoPago: 'ANULADO' as const } : item
-          );
-          localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
-          return updated;
-        });
-      }
+      await luckyphoneApi.delete(`/garantias/${id}`).catch(() => null);
     } finally {
       setLoading(false);
       setIsModalOpen(false);
@@ -172,17 +176,16 @@ export const useWarranties = () => {
   };
 
   const handleRestaurar = async (id: string) => {
+    restaurarGarantiaOptimista(id);
+    setGarantias(prev => {
+      const updated = prev.map(item => (item.id === id ? { ...item, eliminadoAt: null, estadoPago: 'PENDIENTE' as const } : item));
+      localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
+      return updated;
+    });
+
     setLoading(true);
     try {
-      const response = await luckyphoneApi.post(`/garantias/${id}/restaurar`).catch(() => null);
-
-      if (!response || response.status === 200 || response.status === 201) {
-        setGarantias(prev => {
-          const updated = prev.map(item => (item.id === id ? { ...item, eliminadoAt: null, estadoPago: 'PENDIENTE' as const } : item));
-          localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
-          return updated;
-        });
-      }
+      await luckyphoneApi.post(`/garantias/${id}/restaurar`).catch(() => null);
     } finally {
       setLoading(false);
     }

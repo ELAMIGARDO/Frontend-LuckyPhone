@@ -8,6 +8,7 @@ export interface ItemCelularDTO {
   numeroSerial?: string;
   bateria?: string;
   estadoDispositivo?: EstadoDispositivo;
+  fechaVenta?: string;
   creadoAt?: string;
   actualizadoAt?: string;
 }
