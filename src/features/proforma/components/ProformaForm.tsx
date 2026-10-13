@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaUser, FaTag, FaUserCheck, FaBarcode, FaPrint, FaFileInvoiceDollar } from 'react-icons/fa';
-import type { ProformaData } from './useProforma';
+import type { ProformaData } from '../hooks/useProforma';
 import { ProductAutocomplete } from './ProductAutocomplete';
 import type { CatalogItem } from './ProductAutocomplete';
 
@@ -17,7 +17,7 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
   montoDescuento,
   isSaving,
   onChange,
-  onSubmit
+  onSubmit,
 }) => {
   const isCelular = data.categoria === 'Celulares';
   const opcionesGarantia = ['0 Meses', '3 Meses', '6 Meses', '12 Meses', '24 Meses'];
@@ -39,22 +39,24 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
   };
 
   return (
-    <form onSubmit={onSubmit} className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5 print:hidden">
-      {/* CABECERA PANEL */}
+    <form
+      onSubmit={onSubmit}
+      className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5 print:hidden"
+    >
       <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
         <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl border border-purple-200">
           <FaFileInvoiceDollar className="text-xl" />
         </div>
         <div>
           <h3 className="font-extrabold text-slate-900 text-base">Emisión de Proforma & Garantía</h3>
-          <p className="text-xs text-slate-500 font-medium">Completa los datos para generar el documento en tiempo real.</p>
+          <p className="text-xs text-slate-500 font-medium">
+            Completa los datos para generar el documento en tiempo real.
+          </p>
         </div>
       </div>
 
-      {/* COMPONENTE MODULAR DE BÚSQUEDA Y AUTOCOMPLETADO */}
       <ProductAutocomplete onSelect={handleSelectProduct} />
 
-      {/* DATOS DEL EMISOR / ASESOR */}
       <div className="space-y-3">
         <h4 className="text-xs font-black uppercase text-purple-700 tracking-wider flex items-center gap-1.5">
           <FaUserCheck className="text-xs" /> Datos del Emisor
@@ -72,14 +74,15 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
         </div>
       </div>
 
-      {/* DATOS DEL CLIENTE */}
       <div className="space-y-3 pt-3 border-t border-slate-100">
         <h4 className="text-xs font-black uppercase text-purple-700 tracking-wider flex items-center gap-1.5">
           <FaUser className="text-xs" /> Información del Comprador
         </h4>
 
         <div>
-          <label className="block text-[11px] font-bold text-slate-700 mb-1">Nombre Completo del Cliente</label>
+          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+            Nombre Completo del Cliente
+          </label>
           <input
             type="text"
             required
@@ -92,7 +95,10 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-slate-700 mb-1">
-              DNI / RUC <span className="text-[10px] text-purple-600 font-normal font-sans">(8 o 11 dígitos)</span>
+              DNI / RUC{' '}
+              <span className="text-[10px] text-purple-600 font-normal font-sans">
+                (8 o 11 dígitos)
+              </span>
             </label>
             <input
               type="text"
@@ -101,7 +107,6 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
               placeholder="Ej: 74839201 o 20601234567"
               value={data.clienteDni}
               onChange={(e) => {
-                // Permitir estrictamente solo números y máximo 11 caracteres (DNI: 8, RUC: 11)
                 const numericVal = e.target.value.replace(/\D/g, '').substring(0, 11);
                 onChange('clienteDni', numericVal);
               }}
@@ -110,7 +115,8 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
           </div>
           <div>
             <label className="block text-[11px] font-bold text-slate-700 mb-1">
-              Teléfono de Contacto <span className="text-[10px] text-slate-400 font-normal">(Máx 15 car.)</span>
+              Teléfono de Contacto{' '}
+              <span className="text-[10px] text-slate-400 font-normal">(Máx 15 car.)</span>
             </label>
             <input
               type="text"
@@ -125,7 +131,8 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
 
         <div>
           <label className="block text-[11px] font-bold text-slate-700 mb-1">
-            Dirección Registrada <span className="text-[10px] text-slate-400 font-normal">(Máx 60 caracteres)</span>
+            Dirección Registrada{' '}
+            <span className="text-[10px] text-slate-400 font-normal">(Máx 60 caracteres)</span>
           </label>
           <input
             type="text"
@@ -138,7 +145,6 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
         </div>
       </div>
 
-      {/* DATOS DEL PRODUCTO Y GARANTÍA */}
       <div className="space-y-3 pt-3 border-t border-slate-100">
         <h4 className="text-xs font-black uppercase text-purple-700 tracking-wider flex items-center gap-1.5">
           <FaTag className="text-xs" /> Detalle del Equipo & Garantía
@@ -146,7 +152,9 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 mb-1">Categoría del Producto</label>
+            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+              Categoría del Producto
+            </label>
             <select
               value={data.categoria}
               onChange={(e) => onChange('categoria', e.target.value)}
@@ -170,7 +178,6 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
           </div>
         </div>
 
-        {/* CAMPOS DE IDENTIFICACIÓN CONDICIONALES */}
         <div className="bg-slate-50/70 p-3 rounded-xl border border-slate-200/80 space-y-2.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 border-b border-slate-200 pb-1">
             <FaBarcode className="text-purple-600" />
@@ -193,7 +200,9 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-600 mb-1">IMEI 2 (Opcional)</label>
+                  <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                    IMEI 2 (Opcional)
+                  </label>
                   <input
                     type="text"
                     maxLength={15}
@@ -205,7 +214,9 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-600 mb-1">Número de Serie del Equipo</label>
+                <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                  Número de Serie del Equipo
+                </label>
                 <input
                   type="text"
                   maxLength={15}
@@ -218,7 +229,9 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
             </>
           ) : (
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 mb-1">Número de Serie (S/N)</label>
+              <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                Número de Serie (S/N)
+              </label>
               <input
                 type="text"
                 maxLength={15}
@@ -231,7 +244,6 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
           )}
         </div>
 
-        {/* PRECIO Y DESCUENTO DUAL */}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-slate-700 mb-1">Precio Base (S/)</label>
@@ -255,7 +267,9 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
             <div className="flex items-center gap-1">
               <select
                 value={data.descuentoTipo}
-                onChange={(e) => onChange('descuentoTipo', e.target.value as 'soles' | 'porcentaje')}
+                onChange={(e) =>
+                  onChange('descuentoTipo', e.target.value as 'soles' | 'porcentaje')
+                }
                 className="w-16 px-1.5 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 bg-slate-100 text-slate-700 cursor-pointer"
               >
                 <option value="soles">S/</option>
@@ -271,11 +285,13 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
           </div>
         </div>
 
-        {/* TIEMPO DE GARANTÍA */}
         <div className="space-y-1.5">
           <div className="flex justify-between items-center">
             <label className="block text-[11px] font-bold text-slate-700">
-              Cobertura de Garantía <span className="text-purple-600 font-extrabold font-mono">({parseInt(data.duracionGarantia, 10) || 0} Meses)</span>
+              Cobertura de Garantía{' '}
+              <span className="text-purple-600 font-extrabold font-mono">
+                ({parseInt(data.duracionGarantia, 10) || 0} Meses)
+              </span>
             </label>
             <span className="text-[10px] text-slate-400 font-medium">Por defecto: 0 (Manual)</span>
           </div>
@@ -317,14 +333,15 @@ export const ProformaForm: React.FC<ProformaFormProps> = ({
         </div>
       </div>
 
-      {/* BOTÓN DE IMPRESIÓN Y GUARDADO */}
       <button
         type="submit"
         disabled={isSaving}
         className="w-full mt-4 flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-md hover:shadow-lg transition-all active:scale-[0.99] cursor-pointer disabled:opacity-50"
       >
         <FaPrint />
-        <span>{isSaving ? 'Guardando en Base de Datos...' : 'Guardar y Generar PDF / Imprimir'}</span>
+        <span>
+          {isSaving ? 'Guardando en Base de Datos...' : 'Guardar y Generar PDF / Imprimir'}
+        </span>
       </button>
     </form>
   );

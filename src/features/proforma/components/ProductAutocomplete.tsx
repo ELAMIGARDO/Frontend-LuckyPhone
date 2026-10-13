@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaTag } from 'react-icons/fa';
-import { getProductosAdminListaCompletaService } from '../../services/backendService';
+import { getProductosAdminListaCompletaService } from '../../../services/backendService';
 
 export interface CatalogItem {
   nombre: string;
@@ -27,27 +27,31 @@ export const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({ onSele
       .then((productos) => {
         if (productos && productos.length > 0) {
           const mapped: CatalogItem[] = [];
-          productos.forEach(p => {
+          productos.forEach((p) => {
             const cat = p.categoriaNombre || 'Celulares';
             if (cat === 'Celulares' && p.itemsCelulares && p.itemsCelulares.length > 0) {
-              const disponibles = p.itemsCelulares.filter(i => i.estadoDispositivo === 'Disponible');
+              const disponibles = p.itemsCelulares.filter(
+                (i) => i.estadoDispositivo === 'Disponible'
+              );
               if (disponibles.length > 0) {
-                disponibles.forEach(item => {
+                disponibles.forEach((item) => {
                   mapped.push({
-                    nombre: `${p.nombre} (IMEI: ${item.imei1}${item.bateria ? ` • Batería ${item.bateria}` : ''})`,
+                    nombre: `${p.nombre} (IMEI: ${item.imei1}${
+                      item.bateria ? ` • Batería ${item.bateria}` : ''
+                    })`,
                     categoria: 'Celulares',
                     precio: p.precio,
                     imei1: item.imei1,
                     imei2: item.imei2 || '',
                     numeroSerie: item.numeroSerial || '',
-                    bateria: item.bateria
+                    bateria: item.bateria,
                   });
                 });
               } else {
                 mapped.push({
                   nombre: p.nombre,
                   categoria: cat,
-                  precio: p.precio
+                  precio: p.precio,
                 });
               }
             } else {
@@ -55,7 +59,7 @@ export const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({ onSele
                 nombre: p.nombre,
                 categoria: cat,
                 precio: p.precio,
-                numeroSerie: p.numeroSerial
+                numeroSerie: p.numeroSerial,
               });
             }
           });
@@ -65,17 +69,51 @@ export const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({ onSele
       .catch(() => {});
   }, []);
 
-  const catalogSuggestions: CatalogItem[] = dbProducts.length > 0 ? dbProducts : [
-    { nombre: 'Apple iPhone 15 Pro Max 256GB - Titanium Natural (IMEI: 358921094857102 • 100%)', categoria: 'Celulares', precio: 4899, imei1: '358921094857102', imei2: '358921094857103', numeroSerie: 'F2LQX980P0DX' },
-    { nombre: 'Samsung Galaxy S24 Ultra 512GB - Titanium Black (IMEI: 359102948571029 • 100%)', categoria: 'Celulares', precio: 4599, imei1: '359102948571029', numeroSerie: 'R5CW901X88K' },
-    { nombre: 'Cargador Rápido Anker 65W USB-C Dual Port', categoria: 'Cargadores', precio: 189, numeroSerie: 'ANK-90182746' },
-    { nombre: 'Audífonos Inalámbricos Apple AirPods Pro 2da Gen', categoria: 'Audífonos', precio: 899, numeroSerie: 'GX9012837461' },
-    { nombre: 'Cable USB-C a Lightning Carga Rápida 2m', categoria: 'Accesorios', precio: 79 }
-  ];
+  const catalogSuggestions: CatalogItem[] =
+    dbProducts.length > 0
+      ? dbProducts
+      : [
+          {
+            nombre:
+              'Apple iPhone 15 Pro Max 256GB - Titanium Natural (IMEI: 358921094857102 • 100%)',
+            categoria: 'Celulares',
+            precio: 4899,
+            imei1: '358921094857102',
+            imei2: '358921094857103',
+            numeroSerie: 'F2LQX980P0DX',
+          },
+          {
+            nombre:
+              'Samsung Galaxy S24 Ultra 512GB - Titanium Black (IMEI: 359102948571029 • 100%)',
+            categoria: 'Celulares',
+            precio: 4599,
+            imei1: '359102948571029',
+            numeroSerie: 'R5CW901X88K',
+          },
+          {
+            nombre: 'Cargador Rápido Anker 65W USB-C Dual Port',
+            categoria: 'Cargadores',
+            precio: 189,
+            numeroSerie: 'ANK-90182746',
+          },
+          {
+            nombre: 'Audífonos Inalámbricos Apple AirPods Pro 2da Gen',
+            categoria: 'Audífonos',
+            precio: 899,
+            numeroSerie: 'GX9012837461',
+          },
+          {
+            nombre: 'Cable USB-C a Lightning Carga Rápida 2m',
+            categoria: 'Accesorios',
+            precio: 79,
+          },
+        ];
 
-  const filteredCatalog = catalogSuggestions.filter(item => {
+  const filteredCatalog = catalogSuggestions.filter((item) => {
     const matchesSearch = item.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'todas' || item.categoria.toLowerCase() === filterCategory.toLowerCase();
+    const matchesCategory =
+      filterCategory === 'todas' ||
+      item.categoria.toLowerCase() === filterCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
@@ -87,10 +125,10 @@ export const ProductAutocomplete: React.FC<ProductAutocompleteProps> = ({ onSele
 
   return (
     <div className="relative space-y-2 bg-purple-50/30 p-3 rounded-2xl border border-purple-100">
-      <label className="block text-[11px] font-bold text-purple-800 flex items-center gap-1">
+      <label className="text-[11px] font-bold text-purple-800 flex items-center gap-1">
         <FaTag className="text-[10px]" /> Filtrar & Buscar Producto del Inventario
       </label>
-      
+
       <div className="flex flex-col sm:flex-row gap-2">
         <select
           value={filterCategory}

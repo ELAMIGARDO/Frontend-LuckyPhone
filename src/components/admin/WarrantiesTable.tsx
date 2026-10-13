@@ -5,7 +5,7 @@ import { WarrantyToolbar } from './warranties/WarrantyToolbar';
 import { WarrantyTableRow } from './warranties/WarrantyTableRow';
 import { AnularWarningModal } from './warranties/AnularWarningModal';
 import { EditWarrantyModal } from './warranties/EditWarrantyModal';
-import { ProformaPreviewA4 } from '../ui/ProformaPreviewA4';
+import { ProformaPreviewA4 } from '../../features/proforma/components/ProformaPreviewA4';
 
 import { ShieldAlert, Plus } from 'lucide-react';
 export type { Garantia } from './warranties/useWarranties';

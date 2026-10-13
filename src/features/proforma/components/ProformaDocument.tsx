@@ -1,9 +1,9 @@
 import React from 'react';
 import { ProformaForm } from './ProformaForm';
 import { ProformaPreviewA4 } from './ProformaPreviewA4';
-import { useProforma } from './useProforma';
+import { useProforma } from '../hooks/useProforma';
 
-export type { ProformaData } from './useProforma';
+export type { ProformaData } from '../hooks/useProforma';
 
 export const ProformaDocument: React.FC = () => {
   const {
@@ -14,14 +14,12 @@ export const ProformaDocument: React.FC = () => {
     fechaEmision,
     fechaFinGarantia,
     isSaving,
-    handleSubmit
+    handleSubmit,
   } = useProforma();
 
   return (
     <div className="w-full font-sans text-slate-800">
-      {/* GRID PRINCIPAL DE 2 COLUMNAS (12 COLUMNAS TAILWIND) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* PANEL DE FORMULARIO (COLUMNA IZQUIERDA) */}
         <ProformaForm
           data={proformaData}
           montoDescuento={montoDescuento}
@@ -30,7 +28,6 @@ export const ProformaDocument: React.FC = () => {
           onSubmit={handleSubmit}
         />
 
-        {/* VISTA PREVIA A4 AISLADA PARA IMPRESIÓN (COLUMNA DERECHA) */}
         <ProformaPreviewA4
           data={proformaData}
           precioFinal={precioFinal}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { luckyphoneApi } from '../../api/luckyphoneApi';
+import { luckyphoneApi } from '../../../api/luckyphoneApi';
 
 export interface ProformaData {
   codigoProforma: string;
@@ -40,12 +40,12 @@ export const useProforma = () => {
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  // Cargar autogenerador de código correlativo
   useEffect(() => {
-    luckyphoneApi.get('/garantias/siguiente-codigo')
-      .then(res => {
+    luckyphoneApi
+      .get('/garantias/siguiente-codigo')
+      .then((res) => {
         if (res.data && res.data.codigo) {
-          setProformaData(prev => ({ ...prev, codigoProforma: res.data.codigo }));
+          setProformaData((prev) => ({ ...prev, codigoProforma: res.data.codigo }));
         }
       })
       .catch(() => {
@@ -54,25 +54,24 @@ export const useProforma = () => {
   }, []);
 
   const handleChange = (field: keyof ProformaData, value: any) => {
-    setProformaData(prev => ({
+    setProformaData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  // Cálculo del descuento según modalidad (Soles o Porcentaje)
-  const montoDescuento = proformaData.descuentoTipo === 'porcentaje'
-    ? (proformaData.precioBase * (proformaData.descuentoValor || 0)) / 100
-    : (proformaData.descuentoValor || 0);
+  const montoDescuento =
+    proformaData.descuentoTipo === 'porcentaje'
+      ? (proformaData.precioBase * (proformaData.descuentoValor || 0)) / 100
+      : proformaData.descuentoValor || 0;
 
   const precioFinal = Math.max(0, proformaData.precioBase - montoDescuento);
 
-  // Automatización de fechas: Emisión (Hoy) y Fin de Garantía
   const hoy = new Date();
   const fechaEmision = hoy.toLocaleDateString('es-PE', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric'
+    year: 'numeric',
   });
 
   const mesesGarantia = parseInt(proformaData.duracionGarantia, 10) || 0;
@@ -83,11 +82,10 @@ export const useProforma = () => {
     fechaFinGarantia = fechaFin.toLocaleDateString('es-PE', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
   }
 
-  // Guardado transaccional y posterior trigger de impresión A4
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -113,11 +111,10 @@ export const useProforma = () => {
         const fechaCad = new Date();
         fechaCad.setMonth(fechaCad.getMonth() + mesesGarantia);
         return fechaCad.toISOString();
-      })()
+      })(),
     };
 
     try {
-      // 1. Guardar localmente para sincronización instantánea con Control de Garantías
       const nuevaGarantiaLocal = {
         id: payload.id,
         cliente: payload.clienteNombre,
@@ -131,24 +128,31 @@ export const useProforma = () => {
         activacion: new Date().toLocaleDateString('es-PE'),
         caducidad: new Date(payload.fechaCaducidad).toLocaleDateString('es-PE'),
         duracionGarantia: payload.duracionGarantia,
-        diasRestantes: mesesGarantia <= 0 ? 0 : Math.ceil((new Date(payload.fechaCaducidad).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)),
+        diasRestantes:
+          mesesGarantia <= 0
+            ? 0
+            : Math.ceil(
+                (new Date(payload.fechaCaducidad).getTime() - new Date().getTime()) /
+                  (1000 * 60 * 60 * 24)
+              ),
         estado: mesesGarantia <= 0 ? 'Caducado' : 'Vigente',
         alerta: mesesGarantia <= 0,
         eliminadoAt: null,
         precioBase: payload.precioBase,
-        estadoPago: 'PENDIENTE'
+        estadoPago: 'PENDIENTE',
       };
 
       const localSaved = JSON.parse(localStorage.getItem('luckyphone_garantias_local') || '[]');
-      const updatedLocal = [nuevaGarantiaLocal, ...localSaved.filter((g: any) => g.id !== nuevaGarantiaLocal.id)];
+      const updatedLocal = [
+        nuevaGarantiaLocal,
+        ...localSaved.filter((g: any) => g.id !== nuevaGarantiaLocal.id),
+      ];
       localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updatedLocal));
 
-      // 2. Persistir en servidor backend Spring Boot
       await luckyphoneApi.post('/garantias', payload).catch(() => null);
 
-      // Disparar la impresión PDF
       window.print();
-    } catch (err) {
+    } catch {
       window.print();
     } finally {
       setIsSaving(false);
@@ -164,6 +168,6 @@ export const useProforma = () => {
     fechaEmision,
     fechaFinGarantia,
     isSaving,
-    handleSubmit
+    handleSubmit,
   };
 };

@@ -10,7 +10,7 @@ import {
   FaSlidersH
 } from 'react-icons/fa';
 import { Sidebar } from '../components/ui/Sidebar';
-import { ProformaDocument } from '../components/ui/ProformaDocument';
+import { ProformaDocument } from '../features/proforma/components/ProformaDocument';
 import { CustomerReviews } from '../components/home/CustomerReviews';
 import { InventoryTable } from '../features/inventory/components/InventoryTable';
 import { DashboardOverview } from '../features/dashboard/components/DashboardOverview';
