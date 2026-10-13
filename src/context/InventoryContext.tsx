@@ -47,7 +47,14 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const stored = localStorage.getItem(LOCAL_STORAGE_PRODUCTS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          return parsed.map((it: any) => {
+            const realStock = (it.itemsCelulares && Array.isArray(it.itemsCelulares) && it.itemsCelulares.length > 0)
+              ? it.itemsCelulares.filter((u: any) => u.estadoDispositivo === 'Disponible').length
+              : (typeof it.stock === 'number' ? it.stock : 0);
+            return { ...it, stock: realStock };
+          });
+        }
       }
     } catch (e) {
       console.error("Error al inicializar inventario desde localStorage:", e);
@@ -96,6 +103,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           const snVal = item.numeroSerial || (firstItem ? firstItem.numeroSerial : '');
           const batVal = item.bateria || (firstItem ? firstItem.bateria : '100%');
 
+          const stockCalculado = (item.itemsCelulares && Array.isArray(item.itemsCelulares) && item.itemsCelulares.length > 0)
+            ? item.itemsCelulares.filter((u: any) => u.estadoDispositivo === 'Disponible').length
+            : (typeof item.stock === 'number' ? item.stock : 0);
+
           return {
             id: String(item.id),
             modelo: item.modelo || item.nombre || 'Producto',
@@ -104,7 +115,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             ram: item.ram || '8GB',
             color: item.color || 'Estándar',
             precio: item.precio || 0,
-            stock: item.stock !== undefined ? item.stock : 1,
+            stock: stockCalculado,
             imei: imei1Val,
             imei1: imei1Val,
             imei2: imei2Val,

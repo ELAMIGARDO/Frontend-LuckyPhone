@@ -7,7 +7,8 @@ import {
   FaStar, 
   FaSignOutAlt,
   FaStore,
-  FaCog
+  FaCog,
+  FaFileAlt
 } from 'react-icons/fa';
 import type { TabType } from '../../interfaces/luckyPhoneTypes';
 import { useInventoryContext } from '../../context/InventoryContext';
@@ -28,8 +29,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { counts } = useInventoryContext();
 
   const menuItems = [
-    { id: 'metrics' as TabType, label: 'Métricas', icon: FaChartPie },
+    { id: 'metrics' as TabType, label: 'Dashboard Ejecutivo', icon: FaChartPie },
     { id: 'inventory' as TabType, label: 'Inventario de Celulares', icon: FaMobileAlt, badge: counts.disponibles, badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
+    { id: 'reports' as TabType, label: 'Reportes & Auditoría', icon: FaFileAlt },
     { id: 'proforma' as TabType, label: 'Emitir Proforma', icon: FaFileInvoiceDollar },
     { id: 'warranties' as TabType, label: 'Control de Garantías', icon: FaShieldAlt, badge: counts.vigentes, badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
     { id: 'reviews' as TabType, label: 'Reseñas de Clientes', icon: FaStar },

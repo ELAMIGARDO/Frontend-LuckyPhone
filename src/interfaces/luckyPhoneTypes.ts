@@ -1,4 +1,4 @@
-export type TabType = 'metrics' | 'inventory' | 'proforma' | 'warranties' | 'reviews' | 'settings';
+export type TabType = 'metrics' | 'inventory' | 'reports' | 'proforma' | 'warranties' | 'reviews' | 'settings';
 
 export interface AtributoConfig {
   id: number;

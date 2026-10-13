@@ -59,7 +59,9 @@ export const getProductosAdminListaCompletaService = async (): Promise<ProductoR
       nombre: p.nombre,
       descripcion: p.descripcion,
       precio: p.precio,
-      stock: p.stock !== undefined ? p.stock : (p.itemsCelulares ? p.itemsCelulares.filter((i: any) => i.estadoDispositivo === 'Disponible').length : 0),
+      stock: (p.itemsCelulares && Array.isArray(p.itemsCelulares) && p.itemsCelulares.length > 0)
+        ? p.itemsCelulares.filter((i: any) => i.estadoDispositivo === 'Disponible').length
+        : (typeof p.stock === 'number' ? p.stock : 0),
       marca: p.marca,
       modelo: p.modelo,
       almacenamiento: p.almacenamiento,

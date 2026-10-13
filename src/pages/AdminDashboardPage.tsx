@@ -11,10 +11,11 @@ import {
 import { Sidebar } from '../components/ui/Sidebar';
 import { ProformaDocument } from '../components/ui/ProformaDocument';
 import { CustomerReviews } from '../components/home/CustomerReviews';
-import { InventoryTable } from '../components/admin/InventoryTable';
+import { InventoryTable } from '../features/inventory/components/InventoryTable';
+import { DashboardOverview } from '../features/dashboard/components/DashboardOverview';
+import { ReportsPage } from '../features/reports/components/ReportsPage';
 import { DeviceFormModal } from '../components/admin/DeviceFormModal';
 import type { DeviceFormData } from '../components/admin/DeviceFormModal';
-import { MetricsOverview } from '../components/admin/MetricsOverview';
 import { WarrantiesTable } from '../components/admin/WarrantiesTable';
 import { SettingsPage } from './SettingsPage';
 import { FaSlidersH } from 'react-icons/fa';
@@ -38,12 +39,10 @@ const getCategoriaIdByName = (nombre?: string): number => {
 export const AdminDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('inventory');
   const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
-  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const {
     inventory,
     refreshInventory,
-    eliminarProductoOptimista,
     actualizarProductoEnEstado
   } = useInventoryContext();
 
@@ -285,24 +284,6 @@ export const AdminDashboardPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleDeleteDevice = async (id: string) => {
-    if (window.confirm('¿Estás seguro de eliminar este celular del inventario? Esta acción actualizará el catálogo principal.')) {
-      await eliminarProductoOptimista(id);
-    }
-  };
-
-  const filteredInventory = inventory.filter(item =>
-    item.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (item.categoriaNombre && item.categoriaNombre.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (item.imei && item.imei.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (item.imei1 && item.imei1.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (item.imei2 && item.imei2.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (item.numeroSerie && item.numeroSerie.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (item.numeroSerial && item.numeroSerial.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    item.color.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.estado.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-slate-100 flex font-sans text-slate-800">
       <Sidebar
@@ -323,8 +304,9 @@ export const AdminDashboardPage: React.FC = () => {
             </button>
             <div>
               <h2 className="text-xl font-black text-slate-900 flex items-center gap-2 capitalize">
-                {activeTab === 'metrics' && <><FaChartLine className="text-purple-600" /> Métricas Globales</>}
+                {activeTab === 'metrics' && <><FaChartLine className="text-purple-600" /> Dashboard Ejecutivo & KPIs</>}
                 {activeTab === 'inventory' && <><FaMobileAlt className="text-purple-600" /> Gestor de Inventario ({inventory.length} Equipos)</>}
+                {activeTab === 'reports' && <><FaFileInvoiceDollar className="text-purple-600" /> Centro de Reportería & Auditoría Contable</>}
                 {activeTab === 'proforma' && <><FaFileInvoiceDollar className="text-purple-600" /> Emisión de Proforma y Garantía</>}
                 {activeTab === 'warranties' && <><FaShieldAlt className="text-purple-600" /> Control de Garantías de Hardware</>}
                 {activeTab === 'reviews' && <><FaStar className="text-amber-500" /> Reseñas de Clientes</>}
@@ -342,9 +324,9 @@ export const AdminDashboardPage: React.FC = () => {
               <span className="text-xs font-bold text-slate-700">Servidor en Línea</span>
             </div>
             <button
-              onClick={() => { setSearchTerm(''); refreshInventory(); }}
+              onClick={() => refreshInventory()}
               className="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2.5 rounded-xl transition-colors"
-              title="Sincronizar y restablecer filtros"
+              title="Sincronizar inventario y métricas"
             >
               <FaSyncAlt className="text-sm" />
             </button>
@@ -353,23 +335,22 @@ export const AdminDashboardPage: React.FC = () => {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-[1650px] mx-auto print:p-0">
           {activeTab === 'metrics' && (
-            <MetricsOverview
-              inventory={inventory}
+            <DashboardOverview
+              onNavigateInventory={() => setActiveTab('inventory')}
+              onNavigateReports={() => setActiveTab('reports')}
               onNavigateProforma={() => setActiveTab('proforma')}
             />
           )}
 
           {activeTab === 'inventory' && (
             <InventoryTable
-              items={filteredInventory}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
               onOpenCreateModal={handleOpenCreateModal}
               onOpenEditModal={handleOpenEditModal}
-              onDeleteDevice={handleDeleteDevice}
               onToggleVisibility={handleToggleVisibility}
             />
           )}
+
+          {activeTab === 'reports' && <ReportsPage />}
 
           {activeTab === 'proforma' && <ProformaDocument />}
 
