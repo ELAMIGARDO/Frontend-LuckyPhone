@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { luckyphoneApi } from '../../../api/luckyphoneApi';
-import { useInventoryContext } from '../../../context/InventoryContext';
 
 export interface Garantia {
   id: string;
@@ -25,18 +24,17 @@ export interface Garantia {
 }
 
 export const useWarranties = () => {
-  const { counts, anularGarantiaOptimista, restaurarGarantiaOptimista } = useInventoryContext();
-
   const [garantias, setGarantias] = useState<Garantia[]>(() => {
     const localSaved = localStorage.getItem('luckyphone_garantias_local');
     if (localSaved) {
       try {
         const parsed = JSON.parse(localSaved);
         if (Array.isArray(parsed)) return parsed;
-      } catch (e) {}
+      } catch {}
     }
     return [];
   });
+
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'todos' | 'vigentes' | 'caducados' | 'anulados'>('todos');
   const [filtroCobertura, setFiltroCobertura] = useState<string>('todos');
@@ -48,10 +46,15 @@ export const useWarranties = () => {
   useEffect(() => {
     const isAnulados = activeTab === 'anulados';
 
-    // Consultar directamente al servidor de backend
-    luckyphoneApi.get(`/garantias?anulados=${isAnulados}&filtro=${activeTab}&query=${encodeURIComponent(searchTerm)}`)
-      .then(res => {
-        const rawList = res.data && Array.isArray(res.data.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
+    luckyphoneApi
+      .get(`/garantias?anulados=${isAnulados}&filtro=${activeTab}&query=${encodeURIComponent(searchTerm)}`)
+      .then((res) => {
+        const rawList =
+          res.data && Array.isArray(res.data.data)
+            ? res.data.data
+            : Array.isArray(res.data)
+            ? res.data
+            : [];
         const hoy = new Date();
         const mappedList: Garantia[] = rawList.map((g: any) => {
           let dias = g.diasRestantes;
@@ -72,15 +75,19 @@ export const useWarranties = () => {
             imei1: g.imei1 || '',
             imei2: g.imei2 || '',
             numeroSerie: g.numeroSerie || '',
-            activacion: g.fechaEmision ? new Date(g.fechaEmision).toLocaleDateString('es-PE') : g.activacion || '01/01/2026',
-            caducidad: g.fechaCaducidad ? new Date(g.fechaCaducidad).toLocaleDateString('es-PE') : g.caducidad || '01/01/2026',
+            activacion: g.fechaEmision
+              ? new Date(g.fechaEmision).toLocaleDateString('es-PE')
+              : g.activacion || '01/01/2026',
+            caducidad: g.fechaCaducidad
+              ? new Date(g.fechaCaducidad).toLocaleDateString('es-PE')
+              : g.caducidad || '01/01/2026',
             duracionGarantia: g.duracionGarantia || '12 Meses',
             diasRestantes: typeof dias === 'number' ? dias : 30,
             estado: dias > 0 ? 'Vigente' : 'Caducado',
             estadoPago: g.estadoPago || 'PENDIENTE',
             alerta: dias <= 0,
             eliminadoAt: g.eliminadoAt || null,
-            precioBase: g.precioBase || g.precioFinal || 0
+            precioBase: g.precioBase || g.precioFinal || 0,
           };
         });
 
@@ -88,23 +95,21 @@ export const useWarranties = () => {
         localStorage.setItem('luckyphone_garantias_local', JSON.stringify(mappedList));
       })
       .catch(() => {
-        // En caso de que el backend esté apagado, leer del almacenamiento local
         const localSaved = localStorage.getItem('luckyphone_garantias_local');
         if (localSaved) {
           try {
             setGarantias(JSON.parse(localSaved));
-          } catch (e) {}
+          } catch {}
         }
       });
   }, [activeTab, searchTerm]);
 
-  // Sincronización robusta: utilizar los conteos globales que persisten a través de los tabs
-  const countTotales = counts.totales || garantias.filter(g => !g.eliminadoAt).length;
-  const countVigentes = counts.vigentes || garantias.filter(g => !g.eliminadoAt && g.diasRestantes > 0).length;
-  const countCaducados = counts.caducados || garantias.filter(g => !g.eliminadoAt && g.diasRestantes <= 0).length;
-  const countAnulados = counts.anulados || garantias.filter(g => !!g.eliminadoAt).length;
+  const countTotales = garantias.filter((g) => !g.eliminadoAt).length;
+  const countVigentes = garantias.filter((g) => !g.eliminadoAt && g.diasRestantes > 0).length;
+  const countCaducados = garantias.filter((g) => !g.eliminadoAt && g.diasRestantes <= 0).length;
+  const countAnulados = garantias.filter((g) => !!g.eliminadoAt).length;
 
-  const listadoFiltrado = garantias.filter(g => {
+  const listadoFiltrado = garantias.filter((g) => {
     if (activeTab === 'anulados') {
       if (!g.eliminadoAt) return false;
     } else {
@@ -120,12 +125,15 @@ export const useWarranties = () => {
     }
 
     if (filtroCobertura !== 'todos') {
-      const mesBuscado = filtroCobertura.replace(/\D/g, ''); // extrae "0", "3", "6", "12", "24"
+      const mesBuscado = filtroCobertura.replace(/\D/g, '');
       const garantiaMeses = (g.duracionGarantia || '').replace(/\D/g, '');
-      
+
       if (mesBuscado !== '' && garantiaMeses !== '') {
         if (mesBuscado !== garantiaMeses) return false;
-      } else if (g.duracionGarantia && !g.duracionGarantia.toLowerCase().includes(filtroCobertura.toLowerCase())) {
+      } else if (
+        g.duracionGarantia &&
+        !g.duracionGarantia.toLowerCase().includes(filtroCobertura.toLowerCase())
+      ) {
         return false;
       }
     }
@@ -155,11 +163,11 @@ export const useWarranties = () => {
   };
 
   const ejecutarAnulacion = async (id: string) => {
-    // 1. Mutación optimista inmediata del estado local y conteos
-    anularGarantiaOptimista(id);
-    setGarantias(prev => {
-      const updated = prev.map(item =>
-        item.id === id ? { ...item, eliminadoAt: new Date().toISOString(), estadoPago: 'ANULADO' as const } : item
+    setGarantias((prev) => {
+      const updated = prev.map((item) =>
+        item.id === id
+          ? { ...item, eliminadoAt: new Date().toISOString(), estadoPago: 'ANULADO' as const }
+          : item
       );
       localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
       return updated;
@@ -176,9 +184,10 @@ export const useWarranties = () => {
   };
 
   const handleRestaurar = async (id: string) => {
-    restaurarGarantiaOptimista(id);
-    setGarantias(prev => {
-      const updated = prev.map(item => (item.id === id ? { ...item, eliminadoAt: null, estadoPago: 'PENDIENTE' as const } : item));
+    setGarantias((prev) => {
+      const updated = prev.map((item) =>
+        item.id === id ? { ...item, eliminadoAt: null, estadoPago: 'PENDIENTE' as const } : item
+      );
       localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
       return updated;
     });
@@ -196,9 +205,9 @@ export const useWarranties = () => {
     try {
       const response = await luckyphoneApi.post(`/garantias/${id}/pagar`).catch(() => null);
       if (!response || response.status === 200 || response.status === 201) {
-        setGarantias(prev => {
+        setGarantias((prev) => {
           const hoyStr = new Date().toLocaleDateString('es-PE');
-          const updated = prev.map(item =>
+          const updated = prev.map((item) =>
             item.id === id ? { ...item, estadoPago: 'PAGADO' as const, activacion: hoyStr } : item
           );
           localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updated));
@@ -221,10 +230,8 @@ export const useWarranties = () => {
   const handleUpdateGarantia = async (updated: Garantia) => {
     setLoading(true);
     try {
-      // 🧮 RECÁLCULO AUTOMÁTICO DE CADUCIDAD Y DÍAS RESTANTES
       const meses = parseInt(updated.duracionGarantia?.replace(/\D/g, '') || '12', 10);
-      
-      // Parsear fecha de activación DD/MM/YYYY o ISO
+
       let fechaBase = new Date();
       if (updated.activacion && updated.activacion.includes('/')) {
         const parts = updated.activacion.split('/');
@@ -251,17 +258,17 @@ export const useWarranties = () => {
         caducidad: nuevaCaducidadStr,
         diasRestantes: nuevosDiasRestantes,
         estado: nuevoEstado,
-        alerta: nuevosDiasRestantes <= 0
+        alerta: nuevosDiasRestantes <= 0,
       };
 
-      // Actualización local inmediata en interfaz y en almacenamiento persistente (localStorage)
-      setGarantias(prev => {
-        const updatedList = prev.map(item => (item.id === garantiaActualizada.id ? garantiaActualizada : item));
+      setGarantias((prev) => {
+        const updatedList = prev.map((item) =>
+          item.id === garantiaActualizada.id ? garantiaActualizada : item
+        );
         localStorage.setItem('luckyphone_garantias_local', JSON.stringify(updatedList));
         return updatedList;
       });
 
-      // Intentar sincronizar con el servidor backend si hay sesión activa
       const token = localStorage.getItem('token');
       if (token) {
         await luckyphoneApi.put(`/garantias/${garantiaActualizada.id}`, garantiaActualizada).catch(() => null);
@@ -313,6 +320,6 @@ export const useWarranties = () => {
     handlePagarProforma,
     handleOpenEditModal,
     handleUpdateGarantia,
-    handleReimprimirProforma
+    handleReimprimirProforma,
   };
 };

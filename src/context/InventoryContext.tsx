@@ -4,7 +4,6 @@ import {
   getProductosAdminListaCompletaService,
   getMetricsCountsService,
   actualizarEstadoItemCelularService,
-  anularGarantiaService,
   eliminarProductoService,
   type MetricsCounts
 } from '../services/backendService';
@@ -20,8 +19,6 @@ interface InventoryContextType {
   refreshCounts: () => Promise<void>;
   marcarItemVendidoOptimista: (productoId: string, itemId: number) => Promise<void>;
   marcarItemDisponibleOptimista: (productoId: string, itemId: number) => Promise<void>;
-  anularGarantiaOptimista: (garantiaId: string) => Promise<void>;
-  restaurarGarantiaOptimista: (garantiaId: string) => Promise<void>;
   eliminarProductoOptimista: (productoId: string) => Promise<void>;
   actualizarProductoEnEstado: (updated: InventoryItem) => void;
   agregarProductoEnEstado: (newItem: InventoryItem) => void;
@@ -49,15 +46,18 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
           return parsed.map((it: any) => {
-            const realStock = (it.itemsCelulares && Array.isArray(it.itemsCelulares) && it.itemsCelulares.length > 0)
-              ? it.itemsCelulares.filter((u: any) => u.estadoDispositivo === 'Disponible').length
-              : (typeof it.stock === 'number' ? it.stock : 0);
+            const realStock =
+              it.itemsCelulares && Array.isArray(it.itemsCelulares) && it.itemsCelulares.length > 0
+                ? it.itemsCelulares.filter((u: any) => u.estadoDispositivo === 'Disponible').length
+                : typeof it.stock === 'number'
+                ? it.stock
+                : 0;
             return { ...it, stock: realStock };
           });
         }
       }
     } catch (e) {
-      console.error("Error al inicializar inventario desde localStorage:", e);
+      console.error('Error al inicializar inventario desde localStorage:', e);
     }
     return [];
   });
@@ -83,7 +83,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         localStorage.setItem('luckyphone_metrics_counts', JSON.stringify(data));
       }
     } catch (error) {
-      console.error("Error al sincronizar conteos de métricas:", error);
+      console.error('Error al sincronizar conteos de métricas:', error);
     }
   }, []);
 
@@ -103,9 +103,12 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           const snVal = item.numeroSerial || (firstItem ? firstItem.numeroSerial : '');
           const batVal = item.bateria || (firstItem ? firstItem.bateria : '100%');
 
-          const stockCalculado = (item.itemsCelulares && Array.isArray(item.itemsCelulares) && item.itemsCelulares.length > 0)
-            ? item.itemsCelulares.filter((u: any) => u.estadoDispositivo === 'Disponible').length
-            : (typeof item.stock === 'number' ? item.stock : 0);
+          const stockCalculado =
+            item.itemsCelulares && Array.isArray(item.itemsCelulares) && item.itemsCelulares.length > 0
+              ? item.itemsCelulares.filter((u: any) => u.estadoDispositivo === 'Disponible').length
+              : typeof item.stock === 'number'
+              ? item.stock
+              : 0;
 
           return {
             id: String(item.id),
@@ -140,7 +143,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         localStorage.setItem('luckyphone_metrics_counts', JSON.stringify(countsData));
       }
     } catch (error) {
-      console.error("Error al refrescar inventario:", error);
+      console.error('Error al refrescar inventario:', error);
     } finally {
       setLoading(false);
     }
@@ -150,23 +153,18 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     refreshInventory();
   }, [refreshInventory]);
 
-  // ==========================================
-  // ACTUALIZACIONES OPTIMISTAS (0ms DE LATENCIA)
-  // ==========================================
-
   const marcarItemVendidoOptimista = async (productoId: string, itemId: number) => {
-    // 1. Mutar el estado local de inventario inmediatamente
     let nuevoStockPadre = 0;
     let eraMayorACero = false;
 
-    setInventory(prev => {
-      const updated = prev.map(prod => {
+    setInventory((prev) => {
+      const updated = prev.map((prod) => {
         if (prod.id !== productoId) return prod;
 
         const subItems = prod.itemsCelulares || [];
         eraMayorACero = prod.stock > 0;
 
-        const updatedSubItems = subItems.map(it => {
+        const updatedSubItems = subItems.map((it) => {
           if (it.id === itemId) {
             return {
               ...it,
@@ -177,7 +175,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           return it;
         });
 
-        const dispCount = updatedSubItems.filter(i => i.estadoDispositivo === 'Disponible').length;
+        const dispCount = updatedSubItems.filter((i) => i.estadoDispositivo === 'Disponible').length;
         nuevoStockPadre = dispCount;
 
         return {
@@ -191,25 +189,22 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return updated;
     });
 
-    // 2. Actualizar conteos globales inmediatamente
-    setCounts(prev => {
+    setCounts((prev) => {
       const nuevo = {
         ...prev,
         itemsVendidos: prev.itemsVendidos + 1,
         itemsDisponibles: Math.max(0, prev.itemsDisponibles - 1),
-        disponibles: (eraMayorACero && nuevoStockPadre === 0) ? Math.max(0, prev.disponibles - 1) : prev.disponibles,
-        agotados: (eraMayorACero && nuevoStockPadre === 0) ? prev.agotados + 1 : prev.agotados
+        disponibles: eraMayorACero && nuevoStockPadre === 0 ? Math.max(0, prev.disponibles - 1) : prev.disponibles,
+        agotados: eraMayorACero && nuevoStockPadre === 0 ? prev.agotados + 1 : prev.agotados
       };
       localStorage.setItem('luckyphone_metrics_counts', JSON.stringify(nuevo));
       return nuevo;
     });
 
-    // 3. Ejecutar petición HTTP hacia Spring Boot en segundo plano
     try {
       await actualizarEstadoItemCelularService(itemId, 'Vendido');
     } catch (error) {
-      console.error("Error en background al marcar item como vendido:", error);
-      // Rollback silencioso si falla
+      console.error('Error en background al marcar item como vendido:', error);
       refreshInventory();
     }
   };
@@ -218,14 +213,14 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     let nuevoStockPadre = 0;
     let eraCero = false;
 
-    setInventory(prev => {
-      const updated = prev.map(prod => {
+    setInventory((prev) => {
+      const updated = prev.map((prod) => {
         if (prod.id !== productoId) return prod;
 
         const subItems = prod.itemsCelulares || [];
         eraCero = prod.stock === 0;
 
-        const updatedSubItems = subItems.map(it => {
+        const updatedSubItems = subItems.map((it) => {
           if (it.id === itemId) {
             return {
               ...it,
@@ -236,7 +231,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           return it;
         });
 
-        const dispCount = updatedSubItems.filter(i => i.estadoDispositivo === 'Disponible').length;
+        const dispCount = updatedSubItems.filter((i) => i.estadoDispositivo === 'Disponible').length;
         nuevoStockPadre = dispCount;
 
         return {
@@ -250,13 +245,13 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return updated;
     });
 
-    setCounts(prev => {
+    setCounts((prev) => {
       const nuevo = {
         ...prev,
         itemsVendidos: Math.max(0, prev.itemsVendidos - 1),
         itemsDisponibles: prev.itemsDisponibles + 1,
-        disponibles: (eraCero && nuevoStockPadre > 0) ? prev.disponibles + 1 : prev.disponibles,
-        agotados: (eraCero && nuevoStockPadre > 0) ? Math.max(0, prev.agotados - 1) : prev.agotados
+        disponibles: eraCero && nuevoStockPadre > 0 ? prev.disponibles + 1 : prev.disponibles,
+        agotados: eraCero && nuevoStockPadre > 0 ? Math.max(0, prev.agotados - 1) : prev.agotados
       };
       localStorage.setItem('luckyphone_metrics_counts', JSON.stringify(nuevo));
       return nuevo;
@@ -265,62 +260,22 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       await actualizarEstadoItemCelularService(itemId, 'Disponible');
     } catch (error) {
-      console.error("Error en background al marcar item como disponible:", error);
+      console.error('Error en background al marcar item como disponible:', error);
       refreshInventory();
-    }
-  };
-
-  const anularGarantiaOptimista = async (garantiaId: string) => {
-    setCounts(prev => {
-      const nuevo = {
-        ...prev,
-        anulados: prev.anulados + 1,
-        vigentes: Math.max(0, prev.vigentes - 1),
-        totales: Math.max(0, prev.totales - 1)
-      };
-      localStorage.setItem('luckyphone_metrics_counts', JSON.stringify(nuevo));
-      return nuevo;
-    });
-
-    try {
-      await anularGarantiaService(garantiaId);
-    } catch (error) {
-      console.error("Error en background al anular garantia:", error);
-      refreshCounts();
-    }
-  };
-
-  const restaurarGarantiaOptimista = async (_garantiaId: string) => {
-    setCounts(prev => {
-      const nuevo = {
-        ...prev,
-        anulados: Math.max(0, prev.anulados - 1),
-        vigentes: prev.vigentes + 1,
-        totales: prev.totales + 1
-      };
-      localStorage.setItem('luckyphone_metrics_counts', JSON.stringify(nuevo));
-      return nuevo;
-    });
-
-    try {
-      // Si existe endpoint de restauración en backend
-      await refreshCounts();
-    } catch (error) {
-      console.error("Error al restaurar garantia:", error);
     }
   };
 
   const eliminarProductoOptimista = async (productoId: string) => {
     let stockPrevio = 0;
-    setInventory(prev => {
-      const target = prev.find(p => p.id === productoId);
+    setInventory((prev) => {
+      const target = prev.find((p) => p.id === productoId);
       if (target) stockPrevio = target.stock;
-      const updated = prev.filter(p => p.id !== productoId);
+      const updated = prev.filter((p) => p.id !== productoId);
       localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(updated));
       return updated;
     });
 
-    setCounts(prev => {
+    setCounts((prev) => {
       const nuevo = {
         ...prev,
         totalProductos: Math.max(0, prev.totalProductos - 1),
@@ -337,13 +292,13 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         await eliminarProductoService(numId);
       }
     } catch (error) {
-      console.error("Error al eliminar producto en backend:", error);
+      console.error('Error al eliminar producto en backend:', error);
     }
   };
 
   const actualizarProductoEnEstado = (updated: InventoryItem) => {
-    setInventory(prev => {
-      const list = prev.map(p => p.id === updated.id ? updated : p);
+    setInventory((prev) => {
+      const list = prev.map((p) => (p.id === updated.id ? updated : p));
       localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(list));
       return list;
     });
@@ -351,7 +306,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const agregarProductoEnEstado = (newItem: InventoryItem) => {
-    setInventory(prev => {
+    setInventory((prev) => {
       const list = [newItem, ...prev];
       localStorage.setItem(LOCAL_STORAGE_PRODUCTS_KEY, JSON.stringify(list));
       return list;
@@ -370,8 +325,6 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         refreshCounts,
         marcarItemVendidoOptimista,
         marcarItemDisponibleOptimista,
-        anularGarantiaOptimista,
-        restaurarGarantiaOptimista,
         eliminarProductoOptimista,
         actualizarProductoEnEstado,
         agregarProductoEnEstado
